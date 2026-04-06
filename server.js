@@ -22,7 +22,7 @@ const RECIPIENT = "0x7a38788e020644Dd377a5C0F0E1D9f3e3A467369";
 
 const mppx = Mppx.create({
   methods: [tempo.charge({ currency: USDC_TEMPO, recipient: RECIPIENT })],
-  secretKey: process.env.MPP_SECRET_KEY || "citibike-dev-secret",
+  secretKey: process.env.MPP_SECRET_KEY,
 });
 
 // Create payment middleware for both endpoints
