@@ -265,9 +265,22 @@
       <p class="hero-desc">Real-time e-bike counts, dock availability, and walking time for every station in NYC. No API key, no subscription — just micropayments.</p>
 
       <div class="quickstart">
-        <p class="quickstart-label">Add to your agent</p>
+        <p class="quickstart-label">AgentCash</p>
         <div class="cmd-block"><span class="prompt">$</span> npx agentcash add https://citibike-mpp.vercel.app</div>
-        <p style="color: #999; font-size: 0.75rem; margin-top: 0.5rem;">Or call the API directly — <code>GET /nearest</code> and <code>GET /dock</code> return standard MPP 402 challenges.</p>
+      </div>
+
+      <div class="quickstart" style="margin-top: 1rem;">
+        <p class="quickstart-label">MPP CLI</p>
+        <div class="cmd-block"><span class="prompt">$</span> mppx https://citibike-mpp.vercel.app/nearest?lat=40.73&lng=-73.99</div>
+      </div>
+
+      <div class="quickstart" style="margin-top: 1rem;">
+        <p class="quickstart-label">MPP SDK</p>
+        <div class="cmd-block"><span class="comment">// fetch handles 402 automatically</span>
+<span class="prompt">import</span> { Mppx, tempo } from 'mppx/client'
+Mppx.create({ methods: [tempo({ account })] })
+
+const res = await fetch('https://citibike-mpp.vercel.app/nearest?lat=40.73&lng=-73.99')</div>
       </div>
     </section>
 
