@@ -41,7 +41,7 @@ discovery(app, mppx, {
   info: {
     title: "Citi Bike Nearest Station API",
     description:
-      "Find the nearest Citi Bike stations with real-time availability including e-bikes, classic bikes, and open docks.",
+      "Pick up a bike or find a dock. Real-time Citi Bike availability for NYC — e-bikes, docks, and walking time.",
     version: "1.0.0",
   },
   serviceInfo: {
