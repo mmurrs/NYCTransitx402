@@ -204,6 +204,11 @@ app.get("/.well-known/x402", (req, res) => {
   });
 });
 
+// llms.txt
+app.get("/llms.txt", (req, res) => {
+  res.type("text/plain").sendFile(path.join(__dirname, "llms.txt"));
+});
+
 // Static assets
 app.get("/favicon.svg", (req, res) => {
   res.sendFile(path.join(__dirname, "favicon.svg"));
