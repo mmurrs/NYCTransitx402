@@ -47,7 +47,7 @@ discovery(app, mppx, {
   serviceInfo: {
     categories: ["transportation", "bikeshare", "nyc", "citibike"],
     docs: {
-      homepage: "https://github.com/mmurrs/citibike-api",
+      homepage: "https://citibike-mpp.vercel.app",
     },
   },
   routes: [
