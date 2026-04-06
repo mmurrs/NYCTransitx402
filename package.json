@@ -1,7 +1,7 @@
 {
   "name": "citibike-api",
   "version": "1.0.0",
-  "description": "Find nearest Citi Bike station — MPP paid API",
+  "description": "Find nearest Citi Bike station — Machine Payments Protocol paid API",
   "main": "server.js",
   "type": "module",
   "scripts": {
