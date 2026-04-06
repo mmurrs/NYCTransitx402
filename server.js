@@ -204,6 +204,11 @@ app.get("/.well-known/x402", (req, res) => {
   });
 });
 
+// Static assets
+app.get("/favicon.svg", (req, res) => {
+  res.sendFile(path.join(__dirname, "favicon.svg"));
+});
+
 // Landing page
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
