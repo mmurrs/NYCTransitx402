@@ -1,8 +1,21 @@
 import express from "express";
+import { fileURLToPath } from "url";
+import path from "path";
 import { Mppx, tempo, discovery } from "mppx/express";
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 8080;
+
+// CORS
+app.use((req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "*");
+  res.setHeader("Access-Control-Expose-Headers", "WWW-Authenticate");
+  if (req.method === "OPTIONS") return res.sendStatus(204);
+  next();
+});
 
 const USDC_TEMPO = "0x20C000000000000000000000b9537d11c60E8b50";
 const RECIPIENT = "0x7a38788e020644Dd377a5C0F0E1D9f3e3A467369";
@@ -12,10 +25,15 @@ const mppx = Mppx.create({
   secretKey: process.env.MPP_SECRET_KEY || "citibike-dev-secret",
 });
 
-// Create the payment middleware so we can reference it in both the route and discovery
+// Create payment middleware for both endpoints
 const chargeNearest = mppx.charge({
   amount: "0.01",
   description: "Citi Bike nearest station lookup",
+});
+
+const chargeDock = mppx.charge({
+  amount: "0.01",
+  description: "Citi Bike dock availability lookup",
 });
 
 // Mount OpenAPI discovery so AgentCash can find endpoints
@@ -26,13 +44,26 @@ discovery(app, mppx, {
       "Find the nearest Citi Bike stations with real-time availability including e-bikes, classic bikes, and open docks.",
     version: "1.0.0",
   },
+  serviceInfo: {
+    categories: ["transportation", "bikeshare", "nyc", "citibike"],
+    docs: {
+      homepage: "https://github.com/mmurrs/citibike-api",
+    },
+  },
   routes: [
     {
       method: "get",
       path: "/nearest",
       handler: chargeNearest,
       summary:
-        "Find nearest Citi Bike stations with e-bike counts, dock availability, and walking time. Query params: lat (required), lng (required), limit (optional, default 3, max 10).",
+        "Find nearest Citi Bike stations with e-bike counts, dock availability, and walking time. Use this when you need to pick up a bike. Query params: lat (required), lng (required), limit (optional, default 3, max 10).",
+    },
+    {
+      method: "get",
+      path: "/dock",
+      handler: chargeDock,
+      summary:
+        "Find nearest Citi Bike stations with available docks for parking your bike. Use this when you need to drop off a bike. Query params: lat (required), lng (required), limit (optional, default 3, max 10).",
     },
   ],
 });
@@ -103,9 +134,9 @@ app.get("/nearest", chargeNearest, async (req, res) => {
           name: s.name,
           distance_meters: Math.round(dist),
           walk_minutes,
-          ebikes_available: st.num_ebikes_available,
-          bikes_available: st.num_bikes_available,
-          docks_available: st.num_docks_available,
+          ebikes_available: st.num_ebikes_available ?? 0,
+          bikes_available: st.num_bikes_available ?? 0,
+          docks_available: st.num_docks_available ?? 0,
           lat: s.lat,
           lng: s.lon,
         };
@@ -120,13 +151,62 @@ app.get("/nearest", chargeNearest, async (req, res) => {
   }
 });
 
-// Free health check
-app.get("/", (req, res) => {
+// Paid endpoint: $0.01 per request — find docks to park
+app.get("/dock", chargeDock, async (req, res) => {
+  const lat = parseFloat(req.query.lat);
+  const lng = parseFloat(req.query.lng);
+  const limit = Math.min(parseInt(req.query.limit) || 3, 10);
+
+  if (isNaN(lat) || isNaN(lng)) {
+    return res.status(400).json({ error: "lat and lng query params required" });
+  }
+
+  try {
+    const { stations, statusMap } = await fetchGBFS();
+
+    const results = stations
+      .filter((s) => {
+        const st = statusMap.get(s.station_id);
+        return st && st.is_installed === 1 && st.is_returning === 1 && (st.num_docks_available ?? 0) > 0;
+      })
+      .map((s) => {
+        const st = statusMap.get(s.station_id);
+        const dist = distance(lat, lng, s.lat, s.lon);
+        const walk_minutes = Math.round(dist / 80);
+        return {
+          name: s.name,
+          distance_meters: Math.round(dist),
+          walk_minutes,
+          docks_available: st.num_docks_available ?? 0,
+          bikes_available: st.num_bikes_available ?? 0,
+          lat: s.lat,
+          lng: s.lon,
+        };
+      })
+      .sort((a, b) => a.distance_meters - b.distance_meters)
+      .slice(0, limit);
+
+    res.json({ results });
+  } catch (err) {
+    console.error("GBFS fetch error:", err);
+    res.status(502).json({ error: "Failed to fetch station data" });
+  }
+});
+
+// x402 discovery fallback for crawlers
+app.get("/.well-known/x402", (req, res) => {
   res.json({
-    service: "citibike-nearest",
-    usage: "GET /nearest?lat=40.73&lng=-73.99&limit=3",
-    price: "$0.01 per request (MPP/Tempo USDC)",
+    version: 1,
+    resources: [
+      `${req.protocol}://${req.hostname}/nearest`,
+      `${req.protocol}://${req.hostname}/dock`,
+    ],
   });
+});
+
+// Landing page
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "index.html"));
 });
 
 app.listen(PORT, () => {

@@ -83,9 +83,9 @@
 </head>
 <body>
   <h1>CitiBike Station Finder</h1>
-  <p class="subtitle">Find the nearest Citi Bike station with real-time availability. <span class="price">$0.01 / request</span></p>
+  <p class="subtitle">Pick up a bike or find a dock. Real-time availability, paid per request. <span class="price">$0.01 / lookup</span></p>
 
-  <p>An <a href="https://www.x402.org">MPP</a> paid API that returns the closest Citi Bike stations to any location in NYC, including e-bike counts, dock availability, and walking time estimates.</p>
+  <p>A <a href="https://mpp.dev">Machine Payments Protocol</a> paid API that returns the closest Citi Bike stations to any location in NYC. Pick up a bike or find a dock to park — with real-time availability and walking time estimates.</p>
 
   <h2>Use it in Claude Code</h2>
 
@@ -101,7 +101,9 @@
     <span class="step-num">2</span>
     <div>
       <p>Ask Claude:</p>
-      <pre>"Find me the nearest Citi Bike station to Times Square with e-bikes available"</pre>
+      <pre>"Find me a Citi Bike near Bedford Ave — I'm heading to SoHo"
+
+"I'm at the WeWork in Flatiron, where can I dock?"</pre>
     </div>
   </div>
 
@@ -110,22 +112,43 @@
   <hr>
 
   <h2>API Details</h2>
-  <p><strong>Endpoint:</strong> <code>GET /nearest</code></p>
-  <p><strong>Params:</strong> <code>lat</code> (required), <code>lng</code> (required), <code>limit</code> (optional, default 3, max 10)</p>
-  <p><strong>Payment:</strong> MPP via Tempo USDC <span class="badge">$0.01</span></p>
 
-  <h2>Example Response</h2>
+  <p><strong>Pick up a bike:</strong> <code>GET /nearest?lat=…&lng=…&limit=3</code> <span class="badge">$0.01</span></p>
+  <p>Returns nearest stations with available bikes and e-bikes.</p>
+
+  <p><strong>Park a bike:</strong> <code>GET /dock?lat=…&lng=…&limit=3</code> <span class="badge">$0.01</span></p>
+  <p>Returns nearest stations with available docks.</p>
+
+  <p><strong>Params:</strong> <code>lat</code> (required), <code>lng</code> (required), <code>limit</code> (optional, default 3, max 10)</p>
+  <p><strong>Payment:</strong> Machine Payments Protocol via Tempo USDC</p>
+
+  <h2>Example Response <code>/nearest</code></h2>
   <pre>{
   "results": [
     {
-      "name": "W 42 St & 8 Ave",
-      "distance_meters": 180,
+      "name": "Bedford Ave & N 7 St",
+      "distance_meters": 85,
+      "walk_minutes": 1,
+      "ebikes_available": 3,
+      "bikes_available": 11,
+      "docks_available": 6,
+      "lat": 40.7184,
+      "lng": -73.9572
+    }
+  ]
+}</pre>
+
+  <h2>Example Response <code>/dock</code></h2>
+  <pre>{
+  "results": [
+    {
+      "name": "W 21 St & 6 Ave",
+      "distance_meters": 140,
       "walk_minutes": 2,
-      "ebikes_available": 4,
-      "bikes_available": 12,
-      "docks_available": 8,
-      "lat": 40.7575,
-      "lng": -73.9903
+      "docks_available": 9,
+      "bikes_available": 15,
+      "lat": 40.7415,
+      "lng": -73.9940
     }
   ]
 }</pre>
@@ -138,6 +161,6 @@ cd citibike-api
 npm install
 npm start</pre>
 
-  <p class="footer">Built with <a href="https://www.x402.org">MPP</a> and <a href="https://agentcash.dev">AgentCash</a></p>
+  <p class="footer">Built with <a href="https://mpp.dev">Machine Payments Protocol</a> and <a href="https://agentcash.dev">AgentCash</a></p>
 </body>
 </html>
