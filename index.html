@@ -265,13 +265,9 @@
       <p class="hero-desc">Real-time e-bike counts, dock availability, and walking time for every station in NYC. No API key, no subscription — just micropayments.</p>
 
       <div class="quickstart">
-        <p class="quickstart-label">Quick start</p>
-        <div class="cmd-block"><span class="comment"># one-time setup</span>
-<span class="prompt">$</span> npx agentcash onboard
-<span class="comment"># try the API</span>
-<span class="prompt">$</span> npx agentcash try https://citibike-mpp.vercel.app
-<span class="comment"># keep it in your agent's context</span>
-<span class="prompt">$</span> npx agentcash add https://citibike-mpp.vercel.app</div>
+        <p class="quickstart-label">Add to your agent</p>
+        <div class="cmd-block"><span class="prompt">$</span> npx agentcash add https://citibike-mpp.vercel.app</div>
+        <p style="color: #999; font-size: 0.75rem; margin-top: 0.5rem;">Or call the API directly — <code>GET /nearest</code> and <code>GET /dock</code> return standard MPP 402 challenges.</p>
       </div>
     </section>
 
