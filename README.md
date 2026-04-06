@@ -27,7 +27,7 @@ GET /nearest?lat=40.7184&lng=-73.9572&limit=3
 {
   "results": [{
     "name": "Bedford Ave & N 7 St",
-    "distance_meters": 85,
+    "distance_feet": 279,
     "walk_minutes": 1,
     "ebikes_available": 3,
     "bikes_available": 11,
@@ -46,7 +46,7 @@ GET /dock?lat=40.7415&lng=-73.9940&limit=3
 {
   "results": [{
     "name": "W 21 St & 6 Ave",
-    "distance_meters": 140,
+    "distance_feet": 459,
     "walk_minutes": 2,
     "docks_available": 9,
     "bikes_available": 15

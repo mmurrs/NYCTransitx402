@@ -129,10 +129,10 @@ app.get("/nearest", chargeNearest, async (req, res) => {
       .map((s) => {
         const st = statusMap.get(s.station_id);
         const dist = distance(lat, lng, s.lat, s.lon);
-        const walk_minutes = Math.round(dist / 80); // ~80m/min avg walking
+        const walk_minutes = Math.round(dist / 80);
         return {
           name: s.name,
-          distance_meters: Math.round(dist),
+          distance_feet: Math.round(dist * 3.281),
           walk_minutes,
           ebikes_available: st.num_ebikes_available ?? 0,
           bikes_available: st.num_bikes_available ?? 0,
@@ -141,7 +141,7 @@ app.get("/nearest", chargeNearest, async (req, res) => {
           lng: s.lon,
         };
       })
-      .sort((a, b) => a.distance_meters - b.distance_meters)
+      .sort((a, b) => a.distance_feet - b.distance_feet)
       .slice(0, limit);
 
     res.json({ results });
@@ -175,7 +175,7 @@ app.get("/dock", chargeDock, async (req, res) => {
         const walk_minutes = Math.round(dist / 80);
         return {
           name: s.name,
-          distance_meters: Math.round(dist),
+          distance_feet: Math.round(dist * 3.281),
           walk_minutes,
           docks_available: st.num_docks_available ?? 0,
           bikes_available: st.num_bikes_available ?? 0,
@@ -183,7 +183,7 @@ app.get("/dock", chargeDock, async (req, res) => {
           lng: s.lon,
         };
       })
-      .sort((a, b) => a.distance_meters - b.distance_meters)
+      .sort((a, b) => a.distance_feet - b.distance_feet)
       .slice(0, limit);
 
     res.json({ results });
