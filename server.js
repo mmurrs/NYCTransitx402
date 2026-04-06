@@ -17,8 +17,8 @@ app.use((req, res, next) => {
   next();
 });
 
-const USDC_TEMPO = "0x20C000000000000000000000b9537d11c60E8b50";
-const RECIPIENT = "0x7a38788e020644Dd377a5C0F0E1D9f3e3A467369";
+const USDC_TEMPO = process.env.USDC_TEMPO;
+const RECIPIENT = process.env.RECIPIENT;
 
 const mppx = Mppx.create({
   methods: [tempo.charge({ currency: USDC_TEMPO, recipient: RECIPIENT })],
