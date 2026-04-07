@@ -214,6 +214,10 @@ app.get("/favicon.svg", (req, res) => {
   res.sendFile(path.join(__dirname, "favicon.svg"));
 });
 
+app.get("/og.svg", (req, res) => {
+  res.type("image/svg+xml").sendFile(path.join(__dirname, "og.svg"));
+});
+
 // Landing page
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));

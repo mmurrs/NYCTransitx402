@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" fill="none">
+  <rect width="1200" height="630" fill="#111"/>
+  <text x="100" y="260" font-family="system-ui, -apple-system, sans-serif" font-weight="700" font-size="72" fill="#fff" letter-spacing="-2">FindMeA<tspan fill="#0073CE">CitiBike</tspan></text>
+  <text x="100" y="330" font-family="system-ui, -apple-system, sans-serif" font-weight="400" font-size="32" fill="#888">Pick up a bike or find a dock. Real-time availability for NYC.</text>
+  <text x="100" y="400" font-family="monospace" font-weight="400" font-size="24" fill="#555">$0.01 / lookup · Machine Payments Protocol</text>
+  <text x="100" y="520" font-family="monospace" font-weight="400" font-size="20" fill="#0073CE">citibike-mpp.vercel.app</text>
+</svg>

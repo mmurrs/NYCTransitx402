@@ -1,6 +1,6 @@
-# CitiBike Station Finder
+# FindMeACitiBike
 
-Find the nearest Citi Bike stations to pick up a bike or park one. Real-time e-bike availability, dock counts, and walking time estimates. Paid via Machine Payments Protocol micropayments ($0.01/request).
+Pick up a bike or find a dock. Real-time Citi Bike availability for NYC — $0.01/lookup via [Machine Payments Protocol](https://mpp.dev).
 
 **API:** [citibike-mpp.vercel.app](https://citibike-mpp.vercel.app) · **OpenAPI:** [/openapi.json](https://citibike-mpp.vercel.app/openapi.json) · **Verification:** [EigenCompute](https://verify-sepolia.eigencloud.xyz/app/0xd7875b7d5e94062a3147A609A7D9f0fDA3b3ea1B)
 
