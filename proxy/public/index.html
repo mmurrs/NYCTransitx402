@@ -254,8 +254,32 @@
 
   <div class="container">
 
+    <!-- Get started -->
+    <section class="get-started" style="padding-top: 2.5rem;">
+      <p class="get-started-label">Get started</p>
+
+      <div class="method">
+        <p class="method-name">AgentCash</p>
+        <code><span class="kw">$</span> npx agentcash add https://citibike-mpp.vercel.app</code>
+      </div>
+
+      <div class="method">
+        <p class="method-name">MPP CLI</p>
+        <code><span class="kw">$</span> mppx https://citibike-mpp.vercel.app/nearest?lat=40.73&amp;lng=-73.99</code>
+      </div>
+
+      <div class="method">
+        <p class="method-name">MPP SDK</p>
+        <code><span class="cm">// fetch handles 402 automatically</span>
+<span class="kw">import</span> { Mppx, tempo } from 'mppx/client'
+Mppx.create({ methods: [tempo({ account })] })
+
+<span class="kw">await</span> fetch('https://citibike-mpp.vercel.app/nearest?lat=40.73&amp;lng=-73.99')</code>
+      </div>
+    </section>
+
     <!-- Endpoints -->
-    <section class="use-section">
+    <section class="use-section" style="padding-top: 2rem; border-top: 1px solid #e5e7eb;">
       <div class="use-grid">
         <div class="use-card">
           <h3>Pick up a bike <span class="price">$0.01</span></h3>
@@ -288,30 +312,6 @@
     }
   ]
 }</pre>
-    </section>
-
-    <!-- Get started -->
-    <section class="get-started">
-      <p class="get-started-label">Get started</p>
-
-      <div class="method">
-        <p class="method-name">AgentCash</p>
-        <code><span class="kw">$</span> npx agentcash add https://citibike-mpp.vercel.app</code>
-      </div>
-
-      <div class="method">
-        <p class="method-name">MPP CLI</p>
-        <code><span class="kw">$</span> mppx https://citibike-mpp.vercel.app/nearest?lat=40.73&amp;lng=-73.99</code>
-      </div>
-
-      <div class="method">
-        <p class="method-name">MPP SDK</p>
-        <code><span class="cm">// fetch handles 402 automatically</span>
-<span class="kw">import</span> { Mppx, tempo } from 'mppx/client'
-Mppx.create({ methods: [tempo({ account })] })
-
-<span class="kw">await</span> fetch('https://citibike-mpp.vercel.app/nearest?lat=40.73&amp;lng=-73.99')</code>
-      </div>
     </section>
 
   </div>
