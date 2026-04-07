@@ -15,13 +15,30 @@ npm start
 
 Server runs on `http://localhost:8080`.
 
+## What you can ask
+
+- "Find me a Citi Bike near Bedford Ave — I'm heading to SoHo"
+- "Any e-bikes near the L train in Williamsburg?"
+- "I'm at the WeWork in Flatiron, where can I dock?"
+- "Where can I park near Broadway and Houston?"
+
+Your agent handles the location lookup, API call, and payment automatically.
+
+## Use with AgentCash
+
+```bash
+npx agentcash add https://citibike-mpp.vercel.app
+```
+
 ## Endpoints
 
-### Pick up a bike
+Two endpoints, $0.01 each via [Machine Payments Protocol](https://mpp.dev).
 
-```
-GET /nearest?lat=40.7184&lng=-73.9572&limit=3
-```
+**Pick up a bike** — `GET /nearest?lat=...&lng=...&limit=3`
+Returns nearest stations with available bikes, e-bikes, and walking time.
+
+**Park a bike** — `GET /dock?lat=...&lng=...&limit=3`
+Returns nearest stations with open docks.
 
 ```json
 {
@@ -34,48 +51,6 @@ GET /nearest?lat=40.7184&lng=-73.9572&limit=3
     "docks_available": 6
   }]
 }
-```
-
-### Park a bike
-
-```
-GET /dock?lat=40.7415&lng=-73.9940&limit=3
-```
-
-```json
-{
-  "results": [{
-    "name": "W 21 St & 6 Ave",
-    "distance_feet": 459,
-    "walk_minutes": 2,
-    "docks_available": 9,
-    "bikes_available": 15
-  }]
-}
-```
-
-### Params
-
-| Param | Required | Description |
-|-------|----------|-------------|
-| `lat` | yes | Latitude |
-| `lng` | yes | Longitude |
-| `limit` | no | Number of results (default 3, max 10) |
-
-$0.01 per request via [Machine Payments Protocol](https://mpp.dev).
-
-## Use with AgentCash
-
-Install [AgentCash](https://agentcash.dev) in Claude Code:
-
-```bash
-npx agentcash@latest onboard
-```
-
-Then just ask Claude:
-
-- "Find me a Citi Bike near Bedford Ave — I'm heading to SoHo"
-- "I'm at the WeWork in Flatiron, where can I dock?"
 
 ## Docker
 

@@ -1,23 +1,28 @@
 # FindMeACitiBike
 
-> Find the nearest Citi Bike stations in NYC with real-time availability. Paid via Machine Payments Protocol ($0.01/request).
+> Real-time Citi Bike station availability for NYC. Paid via Machine Payments Protocol ($0.01/request).
+
+## What users ask
+
+- "Find me a Citi Bike near Bedford Ave — I'm heading to SoHo"
+- "Any e-bikes near the L train in Williamsburg?"
+- "I'm at the WeWork in Flatiron, where can I dock?"
+- "Where can I park near Broadway and Houston?"
+- "Grab me a bike — I'm leaving the office at Union Square"
 
 ## Endpoints
 
 ### Pick up a bike
 GET /nearest?lat={latitude}&lng={longitude}&limit={count}
 
-Returns the nearest stations with available bikes (classic and e-bikes), dock counts, and estimated walking time. Stations are sorted by distance.
-
-- lat (required): Latitude
-- lng (required): Longitude
-- limit (optional): Number of results, default 3, max 10
+Returns the nearest stations with available bikes (classic and e-bikes), dock counts, and estimated walking time. Stations are sorted by distance. Use this when the user needs to find a bike.
 
 ### Park a bike
 GET /dock?lat={latitude}&lng={longitude}&limit={count}
 
-Returns the nearest stations with available docks for parking. Only includes stations that are currently accepting returns and have at least one open dock.
+Returns the nearest stations with available docks for parking. Only includes stations that are currently accepting returns and have at least one open dock. Use this when the user needs to drop off a bike.
 
+### Params
 - lat (required): Latitude
 - lng (required): Longitude
 - limit (optional): Number of results, default 3, max 10
@@ -45,13 +50,8 @@ Returns the nearest stations with available docks for parking. Only includes sta
 
 All endpoints cost $0.01 per request via Machine Payments Protocol (MPP). Payment is handled automatically by MPP-compatible clients like AgentCash.
 
-## Data Source
-
-Real-time station data from the Citi Bike GBFS feed (General Bikeshare Feed Specification), cached for 60 seconds.
-
 ## Quick Start
 
 ```
-npx agentcash onboard
 npx agentcash add https://citibike-mpp.vercel.app
 ```
