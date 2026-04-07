@@ -1,4 +1,4 @@
-# CitiBike Station Finder API
+# FindMeACitiBike
 
 > Find the nearest Citi Bike stations in NYC with real-time availability. Paid via Machine Payments Protocol ($0.01/request).
 
@@ -29,7 +29,7 @@ Returns the nearest stations with available docks for parking. Only includes sta
   "results": [
     {
       "name": "Bedford Ave & N 7 St",
-      "distance_meters": 85,
+      "distance_feet": 279,
       "walk_minutes": 1,
       "ebikes_available": 3,
       "bikes_available": 11,
@@ -53,5 +53,5 @@ Real-time station data from the Citi Bike GBFS feed (General Bikeshare Feed Spec
 
 ```
 npx agentcash onboard
-npx agentcash try https://citibike-api.eigencloud.xyz
+npx agentcash add https://citibike-mpp.vercel.app
 ```

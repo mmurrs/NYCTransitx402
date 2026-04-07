@@ -7,8 +7,8 @@ Pick up a bike or find a dock. Real-time Citi Bike availability for NYC — $0.0
 ## Quickstart
 
 ```bash
-git clone https://github.com/mmurrs/citibike-api.git
-cd citibike-api
+git clone https://github.com/mmurrs/FindMeACitiBike.git
+cd FindMeACitiBike
 npm install
 npm start
 ```
@@ -80,8 +80,8 @@ Then just ask Claude:
 ## Docker
 
 ```bash
-docker build -t citibike-api .
-docker run -p 8080:8080 citibike-api
+docker build -t findmeacitibike .
+docker run -p 8080:8080 findmeacitibike
 ```
 
 ## License
