@@ -108,23 +108,51 @@ function distance(lat1, lon1, lat2, lon2) {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-// Paid endpoint: $0.01 per request
-app.get("/nearest", chargeNearest, async (req, res) => {
-  const lat = parseFloat(req.query.lat);
-  const lng = parseFloat(req.query.lng);
-  const limit = Math.min(parseInt(req.query.limit) || 3, 10);
+function parseLookupQuery(query) {
+  const lat = Number.parseFloat(query.lat);
+  const lng = Number.parseFloat(query.lng);
 
-  if (isNaN(lat) || isNaN(lng)) {
-    return res.status(400).json({ error: "lat and lng query params required" });
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+    return { error: "lat and lng query params required" };
   }
 
+  if (query.limit === undefined) {
+    return { value: { lat, lng, limit: 3 } };
+  }
+
+  const limit = Number.parseInt(query.limit, 10);
+  if (!Number.isInteger(limit) || limit < 1 || limit > 10) {
+    return { error: "limit must be an integer between 1 and 10" };
+  }
+
+  return { value: { lat, lng, limit } };
+}
+
+function validateLookupQuery(req, res, next) {
+  const parsed = parseLookupQuery(req.query);
+  if (parsed.error) {
+    return res.status(400).json({ error: parsed.error });
+  }
+
+  req.lookupQuery = parsed.value;
+  next();
+}
+
+// Paid endpoint: $0.01 per request
+app.get("/nearest", validateLookupQuery, chargeNearest, async (req, res) => {
+  const { lat, lng, limit } = req.lookupQuery;
   try {
     const { stations, statusMap } = await fetchGBFS();
 
     const results = stations
       .filter((s) => {
         const st = statusMap.get(s.station_id);
-        return st && st.is_installed === 1 && st.is_renting === 1;
+        return (
+          st &&
+          st.is_installed === 1 &&
+          st.is_renting === 1 &&
+          (st.num_bikes_available ?? 0) > 0
+        );
       })
       .map((s) => {
         const st = statusMap.get(s.station_id);
@@ -152,15 +180,8 @@ app.get("/nearest", chargeNearest, async (req, res) => {
 });
 
 // Paid endpoint: $0.01 per request — find docks to park
-app.get("/dock", chargeDock, async (req, res) => {
-  const lat = parseFloat(req.query.lat);
-  const lng = parseFloat(req.query.lng);
-  const limit = Math.min(parseInt(req.query.limit) || 3, 10);
-
-  if (isNaN(lat) || isNaN(lng)) {
-    return res.status(400).json({ error: "lat and lng query params required" });
-  }
-
+app.get("/dock", validateLookupQuery, chargeDock, async (req, res) => {
+  const { lat, lng, limit } = req.lookupQuery;
   try {
     const { stations, statusMap } = await fetchGBFS();
 
