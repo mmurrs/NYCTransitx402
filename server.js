@@ -90,7 +90,13 @@ discovery(app, mppx, {
       summary:
         "Find nearest subway stations with real-time train arrivals. Returns upcoming trains with ETAs, lines, and direction. Query params: lat (required), lng (required), limit (optional, default 3, max 10).",
     },
-    // Bus endpoint added to discovery once MTA_BUS_API_KEY is configured
+    {
+      method: "get",
+      path: "/bus/nearest",
+      handler: chargeBus,
+      summary:
+        "Find nearest bus stops with real-time arrival predictions. Returns routes, destinations, and ETAs. Query params: lat (required), lng (required), limit (optional, default 3, max 10).",
+    },
   ],
 });
 
@@ -424,15 +430,19 @@ app.get(
             monData.Siri?.ServiceDelivery?.StopMonitoringDelivery?.[0]
               ?.MonitoredStopVisit || [];
 
+          const now = Date.now();
           const arrivals = visits.slice(0, 6).map((v) => {
-            const call = v.MonitoredVehicleJourney?.MonitoredCall;
-            const distances = call?.Extensions?.Distances;
+            const journey = v.MonitoredVehicleJourney;
+            const call = journey?.MonitoredCall;
+            const eta = call?.ExpectedArrivalTime
+              ? Math.max(0, Math.round((new Date(call.ExpectedArrivalTime) - now) / 60_000))
+              : null;
             return {
-              route: v.MonitoredVehicleJourney?.PublishedLineName?.[0] || "?",
-              destination:
-                v.MonitoredVehicleJourney?.DestinationName?.[0] || "",
-              minutes: distances?.PresentableDistance || "approaching",
-              stops_away: distances?.StopsFromCall ?? null,
+              route: journey?.PublishedLineName?.[0] || "?",
+              destination: journey?.DestinationName?.[0] || "",
+              minutes: eta,
+              proximity: call?.ArrivalProximityText || null,
+              stops_away: call?.NumberOfStopsAway ?? null,
             };
           });
 
@@ -441,7 +451,7 @@ app.get(
             name: stop.name,
             distance_feet: Math.round(dist * 3.281),
             walk_minutes: Math.round(dist / 80),
-            routes: stop.routeIds?.map((r) => r.replace("MTA NYCT_", "")) || [],
+            routes: stop.routes?.map((r) => r.shortName) || [],
             arrivals,
             lat: stop.lat,
             lng: stop.lon,
@@ -467,7 +477,7 @@ app.get("/.well-known/x402", (req, res) => {
       `${base}/citibike/nearest`,
       `${base}/citibike/dock`,
       `${base}/subway/nearest`,
-      // `${base}/bus/nearest`, // uncomment once MTA_BUS_API_KEY is set
+      `${base}/bus/nearest`,
     ],
   });
 });

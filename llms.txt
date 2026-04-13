@@ -31,7 +31,7 @@ Returns the nearest subway stations with real-time train arrivals. Includes upco
 ### Bus — Next bus
 GET /bus/nearest?lat={latitude}&lng={longitude}&limit={count}
 
-Returns the nearest bus stops with real-time arrival predictions. Includes route, destination, and estimated time. (Coming soon — under development.)
+Returns the nearest bus stops with real-time arrival predictions. Includes route, destination, minutes until arrival, and stops away. Data from MTA SIRI feeds.
 
 ### Params (all endpoints)
 - lat (required): Latitude
