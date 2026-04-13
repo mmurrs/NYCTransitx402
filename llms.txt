@@ -1,34 +1,46 @@
-# FindMeACitiBike
+# FindMeA — NYC Transit API
 
-> Real-time Citi Bike station availability for NYC. Paid via Machine Payments Protocol ($0.01/request).
+> Real-time NYC transit for agents. Citi Bike stations, subway arrivals, and bus predictions — $0.01 per lookup via Machine Payments Protocol.
 
 ## What users ask
 
 - "Find me a Citi Bike near Bedford Ave — I'm heading to SoHo"
 - "Any e-bikes near the L train in Williamsburg?"
 - "I'm at the WeWork in Flatiron, where can I dock?"
-- "Where can I park near Broadway and Houston?"
-- "Grab me a bike — I'm leaving the office at Union Square"
+- "When's the next L train at Union Square?"
+- "What subway is closest to me right now?"
+- "Is there a bus near Broadway and Houston?"
 
 ## Endpoints
 
-### Pick up a bike
-GET /nearest?lat={latitude}&lng={longitude}&limit={count}
+### Citi Bike — Pick up a bike
+GET /citibike/nearest?lat={latitude}&lng={longitude}&limit={count}
 
-Returns the nearest stations with available bikes (classic and e-bikes), dock counts, and estimated walking time. Stations are sorted by distance. Use this when the user needs to find a bike.
+Returns the nearest stations with available bikes (classic and e-bikes), dock counts, and estimated walking time. Use this when the user needs to find a bike.
 
-### Park a bike
-GET /dock?lat={latitude}&lng={longitude}&limit={count}
+### Citi Bike — Park a bike
+GET /citibike/dock?lat={latitude}&lng={longitude}&limit={count}
 
-Returns the nearest stations with available docks for parking. Only includes stations that are currently accepting returns and have at least one open dock. Use this when the user needs to drop off a bike.
+Returns the nearest stations with available docks for parking. Only includes stations currently accepting returns with at least one open dock. Use this when the user needs to drop off a bike.
 
-### Params
+### Subway — Next train
+GET /subway/nearest?lat={latitude}&lng={longitude}&limit={count}
+
+Returns the nearest subway stations with real-time train arrivals. Includes upcoming trains with line, direction (Uptown/Downtown), and minutes until arrival. Data comes from MTA GTFS-RT feeds updated every 30 seconds.
+
+### Bus — Next bus
+GET /bus/nearest?lat={latitude}&lng={longitude}&limit={count}
+
+Returns the nearest bus stops with real-time arrival predictions. Includes route, destination, and estimated time. (Coming soon — under development.)
+
+### Params (all endpoints)
 - lat (required): Latitude
 - lng (required): Longitude
 - limit (optional): Number of results, default 3, max 10
 
 ## Response Format
 
+### Citi Bike
 ```json
 {
   "results": [
@@ -41,6 +53,26 @@ Returns the nearest stations with available docks for parking. Only includes sta
       "docks_available": 6,
       "lat": 40.7184,
       "lng": -73.9572
+    }
+  ]
+}
+```
+
+### Subway
+```json
+{
+  "results": [
+    {
+      "name": "Bedford Ave",
+      "distance_feet": 350,
+      "walk_minutes": 1,
+      "lines": ["L"],
+      "arrivals": [
+        { "line": "L", "direction": "Uptown", "minutes": 3 },
+        { "line": "L", "direction": "Downtown", "minutes": 7 }
+      ],
+      "lat": 40.7172,
+      "lng": -73.9567
     }
   ]
 }

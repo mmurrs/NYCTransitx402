@@ -1,7 +1,7 @@
 {
-  "name": "findmeacitibike",
-  "version": "1.0.0",
-  "description": "FindMeACitiBike — Real-time Citi Bike availability for NYC, paid via Machine Payments Protocol",
+  "name": "findmea",
+  "version": "2.0.0",
+  "description": "FindMeA — Real-time NYC transit for agents. Citi Bike, Subway, Bus — $0.01 per lookup via MPP.",
   "main": "server.js",
   "type": "module",
   "scripts": {
@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "express": "^5.2.1",
+    "gtfs-realtime-bindings": "^1.1.1",
     "mppx": "^0.4.11"
   }
 }
