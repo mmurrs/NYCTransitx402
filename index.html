@@ -80,8 +80,36 @@
     }
     .hero .open-source:hover { text-decoration: underline; }
 
+    /* Things you can say */
+    .prompts { padding: 2.5rem 0; }
+    .prompt-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .prompt-list li {
+      font-size: 0.875rem;
+      color: #555;
+      font-style: italic;
+      padding: 0.6rem 1rem;
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+    }
+    .prompt-list li::before {
+      content: "\201C";
+      color: #bbb;
+      margin-right: 2px;
+    }
+    .prompt-list li::after {
+      content: "\201D";
+      color: #bbb;
+      margin-left: 2px;
+    }
+
     /* Get started */
-    .get-started { padding: 2.5rem 0; }
+    .get-started { padding: 2.5rem 0; border-top: 1px solid #e5e7eb; }
     .section-label {
       font-size: 0.6875rem;
       text-transform: uppercase;
@@ -274,7 +302,7 @@
   <nav>
     <a class="logo" href="/"><svg width="20" height="20" viewBox="0 0 32 32" style="vertical-align: -3px; margin-right: 6px;"><rect width="32" height="32" rx="6" fill="#111"/><text x="16" y="22" text-anchor="middle" font-family="system-ui" font-weight="700" font-size="18" fill="#fff">F</text></svg>FindMeA</a>
     <div class="links">
-      <a href="https://github.com/mmurrs/FindMeACitiBike">GitHub</a>
+      <a href="https://github.com/mmurrs/findmea">GitHub</a>
       <a href="https://mpp.dev">MPP</a>
       <a href="/llms.txt">/llms.txt</a>
     </div>
@@ -285,11 +313,23 @@
       <h1>Real-time NYC transit for your agent.</h1>
       <p>Citi Bike stations, subway arrivals, and bus predictions. Three transit modes, one API, $0.01 per lookup.</p>
       <p class="prompt">"Should I bike or take the subway from Williamsburg to SoHo?"</p>
-      <a class="open-source" href="https://github.com/mmurrs/FindMeACitiBike">View source on GitHub &rarr;</a>
+      <a class="open-source" href="https://github.com/mmurrs/findmea">View source on GitHub &rarr;</a>
     </div>
   </section>
 
   <div class="container">
+
+    <section class="prompts">
+      <p class="section-label">Things you can say</p>
+      <ul class="prompt-list">
+        <li>Find me a Citi Bike near Bedford Ave — I'm heading to SoHo</li>
+        <li>When's the next L train at Union Square?</li>
+        <li>Should I bike or take the subway from Williamsburg to SoHo?</li>
+        <li>Where can I dock near the WeWork in Flatiron?</li>
+        <li>Is there a bus near Broadway and Houston?</li>
+        <li>I'm running late — what's the fastest way to get there?</li>
+      </ul>
+    </section>
 
     <section class="get-started">
       <p class="section-label">Get started</p>
@@ -425,7 +465,7 @@ Mppx.create({ methods: [tempo({ account })] })
   <footer>
     <div class="footer-inner">
       <div class="footer-links">
-        <a href="https://github.com/mmurrs/FindMeACitiBike">GitHub</a>
+        <a href="https://github.com/mmurrs/findmea">GitHub</a>
         <a href="https://mpp.dev">MPP</a>
         <a href="https://agentcash.dev">AgentCash</a>
         <a href="/llms.txt">/llms.txt</a>

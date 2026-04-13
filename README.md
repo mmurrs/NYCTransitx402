@@ -1,26 +1,28 @@
-# FindMeACitiBike
+# FindMeA — NYC Transit API
 
-Pick up a bike or find a dock. Real-time Citi Bike availability for NYC — $0.01/lookup via [Machine Payments Protocol](https://mpp.dev).
+Real-time NYC transit for agents. Citi Bike stations, subway arrivals, and bus predictions — $0.01/lookup via [Machine Payments Protocol](https://mpp.dev).
 
-**API:** [citibike-mpp.vercel.app](https://citibike-mpp.vercel.app) · **OpenAPI:** [/openapi.json](https://citibike-mpp.vercel.app/openapi.json) · **Verification:** [EigenCompute](https://verify-sepolia.eigencloud.xyz/app/0xd7875b7d5e94062a3147A609A7D9f0fDA3b3ea1B)
+**API:** [citibike-mpp.vercel.app](https://citibike-mpp.vercel.app) · **OpenAPI:** [/openapi.json](https://citibike-mpp.vercel.app/openapi.json)
 
 ## Quickstart
 
 ```bash
-git clone https://github.com/mmurrs/FindMeACitiBike.git
-cd FindMeACitiBike
+git clone https://github.com/mmurrs/findmea.git
+cd findmea
 npm install
 npm start
 ```
 
 Server runs on `http://localhost:8080`.
 
-## What you can ask
+## Things you can say
 
 - "Find me a Citi Bike near Bedford Ave — I'm heading to SoHo"
-- "Any e-bikes near the L train in Williamsburg?"
-- "I'm at the WeWork in Flatiron, where can I dock?"
-- "Where can I park near Broadway and Houston?"
+- "When's the next L train at Union Square?"
+- "Should I bike or take the subway from Williamsburg to SoHo?"
+- "Where can I dock near the WeWork in Flatiron?"
+- "Is there a bus near Broadway and Houston?"
+- "I'm running late — what's the fastest way to get there?"
 
 Your agent handles the location lookup, API call, and payment automatically.
 
@@ -32,14 +34,29 @@ npx agentcash add https://citibike-mpp.vercel.app
 
 ## Endpoints
 
-Two endpoints, $0.01 each via [Machine Payments Protocol](https://mpp.dev).
+Five endpoints, $0.01 each via [Machine Payments Protocol](https://mpp.dev).
 
-**Pick up a bike** — `GET /nearest?lat=...&lng=...&limit=3`
+### Bike
+
+**Pick up a bike** — `GET /citibike/nearest?lat=...&lng=...&limit=3`
 Returns nearest stations with available bikes, e-bikes, and walking time.
 
-**Park a bike** — `GET /dock?lat=...&lng=...&limit=3`
+**Park a bike** — `GET /citibike/dock?lat=...&lng=...&limit=3`
 Returns nearest stations with open docks.
 
+### Subway
+
+**Next train** — `GET /subway/nearest?lat=...&lng=...&limit=3`
+Returns nearest stations with real-time arrivals — line, direction, and minutes until departure. 496 stations, 26 lines, GTFS-RT feeds updated every 30 seconds.
+
+### Bus
+
+**Next bus** — `GET /bus/nearest?lat=...&lng=...&limit=3`
+Returns nearest stops with real-time arrival predictions — route, destination, ETA, and stops away.
+
+## Example responses
+
+### /citibike/nearest
 ```json
 {
   "results": [{
@@ -51,12 +68,30 @@ Returns nearest stations with open docks.
     "docks_available": 6
   }]
 }
+```
+
+### /subway/nearest
+```json
+{
+  "results": [{
+    "name": "14 St-Union Sq",
+    "distance_feet": 159,
+    "walk_minutes": 0,
+    "lines": ["N", "Q", "R", "W"],
+    "arrivals": [
+      { "line": "Q", "direction": "Uptown", "minutes": 1 },
+      { "line": "W", "direction": "Uptown", "minutes": 3 },
+      { "line": "R", "direction": "Downtown", "minutes": 4 }
+    ]
+  }]
+}
+```
 
 ## Docker
 
 ```bash
-docker build -t findmeacitibike .
-docker run -p 8080:8080 findmeacitibike
+docker build -t findmea .
+docker run -p 8080:8080 findmea
 ```
 
 ## License
