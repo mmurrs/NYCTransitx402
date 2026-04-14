@@ -4,14 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FindMeA — NYC Transit API</title>
-  <meta name="description" content="Real-time NYC transit for agents. Citi Bike, Subway, Bus — $0.01 per lookup via Machine Payments Protocol.">
+  <meta name="description" content="Real-time NYC transit for agents. Citi Bike, Subway, Bus — $0.02 per lookup via Machine Payments Protocol.">
   <meta property="og:title" content="FindMeA — NYC Transit API">
-  <meta property="og:description" content="Real-time NYC transit for agents. Citi Bike, Subway, Bus — $0.01 per lookup via MPP.">
+  <meta property="og:description" content="Real-time NYC transit for agents. Citi Bike, Subway, Bus — $0.02 per lookup via MPP.">
   <meta property="og:image" content="https://findmea-nyc.vercel.app/og.svg">
   <meta property="og:url" content="https://findmea-nyc.vercel.app">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="FindMeA — NYC Transit API">
-  <meta name="twitter:description" content="Real-time NYC transit for agents. Citi Bike, Subway, Bus — $0.01 per lookup via MPP.">
+  <meta name="twitter:description" content="Real-time NYC transit for agents. Citi Bike, Subway, Bus — $0.02 per lookup via MPP.">
   <meta name="twitter:image" content="https://findmea-nyc.vercel.app/og.svg">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -80,36 +80,6 @@
     }
     .hero .open-source:hover { text-decoration: underline; }
 
-    /* Things you can say */
-    .prompts { padding: 2.5rem 0; }
-    .prompt-list {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-    .prompt-list li {
-      font-size: 0.875rem;
-      color: #555;
-      font-style: italic;
-      padding: 0.6rem 1rem;
-      background: #fff;
-      border: 1px solid #e5e7eb;
-      border-radius: 6px;
-    }
-    .prompt-list li::before {
-      content: "\201C";
-      color: #bbb;
-      margin-right: 2px;
-    }
-    .prompt-list li::after {
-      content: "\201D";
-      color: #bbb;
-      margin-left: 2px;
-    }
-
-    /* Get started */
-    .get-started { padding: 2.5rem 0; border-top: 1px solid #e5e7eb; }
     .section-label {
       font-size: 0.6875rem;
       text-transform: uppercase;
@@ -118,6 +88,29 @@
       font-weight: 600;
       margin-bottom: 1rem;
     }
+
+    /* Things you can say */
+    .prompts { padding: 2.5rem 0; }
+    .prompt-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.375rem;
+    }
+    .prompt-list li {
+      font-size: 0.8125rem;
+      color: #555;
+      font-style: italic;
+      padding: 0.5rem 0.875rem;
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+    }
+    .prompt-list li::before { content: "\201C"; color: #ccc; }
+    .prompt-list li::after { content: "\201D"; color: #ccc; }
+
+    /* Get started */
+    .get-started { padding: 2.5rem 0; border-top: 1px solid #e5e7eb; }
     .method {
       background: #fff;
       border: 1px solid #e5e7eb;
@@ -143,16 +136,20 @@
     .method code .kw { color: #0073CE; }
     .method code .cm { color: #aaa; }
 
-    /* Transit modes */
-    .mode-section {
-      padding: 2rem 0;
-      border-top: 1px solid #e5e7eb;
+    /* Endpoints — compact mode blocks */
+    .endpoints { padding: 2.5rem 0; border-top: 1px solid #e5e7eb; }
+    .mode-block {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 1.25rem;
+      margin-bottom: 0.75rem;
     }
-    .mode-header {
+    .mode-block-header {
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      margin-bottom: 1rem;
+      margin-bottom: 0.75rem;
     }
     .mode-dot {
       width: 10px;
@@ -160,80 +157,80 @@
       border-radius: 50%;
       flex-shrink: 0;
     }
-    .mode-title {
+    .mode-block-title {
       font-size: 0.875rem;
       font-weight: 700;
-      letter-spacing: -0.01em;
     }
-    .mode-badge {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.6rem;
-      font-weight: 500;
-      padding: 0.1rem 0.35rem;
-      border-radius: 3px;
+    .mode-block-price {
       margin-left: auto;
-    }
-    .mode-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0.75rem;
-      margin-bottom: 1rem;
-    }
-    @media (max-width: 520px) { .mode-grid { grid-template-columns: 1fr; } }
-    .endpoint-card {
-      background: #fff;
-      border: 1px solid #e5e7eb;
-      border-radius: 8px;
-      padding: 1rem;
-    }
-    .endpoint-card h4 {
-      font-size: 0.8125rem;
-      font-weight: 600;
-      margin-bottom: 0.25rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .endpoint-card .price {
       font-family: 'JetBrains Mono', monospace;
       font-size: 0.6875rem;
       font-weight: 500;
       color: #fff;
-      padding: 0.15rem 0.4rem;
+      padding: 0.15rem 0.5rem;
       border-radius: 3px;
     }
-    .endpoint-card .prompt-example {
-      font-size: 0.8125rem;
-      font-style: italic;
-      color: #555;
-      margin-bottom: 0.25rem;
+    .mode-block-routes {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
     }
-    .endpoint-card p { font-size: 0.8125rem; color: #888; margin: 0; }
-    .endpoint-card code {
-      display: block;
-      margin-top: 0.5rem;
+    .route-item {
+      display: flex;
+      align-items: baseline;
+      gap: 0.35rem;
+      font-size: 0.8125rem;
+      color: #555;
+    }
+    .route-item code {
       font-family: 'JetBrains Mono', monospace;
       font-size: 0.6875rem;
-      color: #555;
-      background: #f5f6f8;
-      padding: 0.4rem 0.6rem;
-      border-radius: 4px;
+      color: #888;
     }
-    .coming-soon {
-      font-size: 0.6875rem;
-      color: #bbb;
-      font-weight: 500;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
+    .route-item .route-label { font-weight: 500; color: #333; }
+    .mode-block-meta {
+      font-size: 0.75rem;
+      color: #999;
+      margin-bottom: 0.5rem;
+    }
+    .subway-lines {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.25rem;
+      margin-top: 0.5rem;
+    }
+    .subway-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      font-size: 0.625rem;
+      font-weight: 700;
+      font-family: 'Inter', sans-serif;
+      color: #fff;
+      line-height: 1;
     }
 
-    /* Colors */
-    .bike-color { background: #0073CE; }
-    .subway-color { background: #FF6319; }
-    .bus-color { background: #00ADD0; }
-    .bike-price { background: #0073CE; }
-    .subway-price { background: #FF6319; }
-    .bus-price { background: #00ADD0; }
+    /* Params */
+    .params-row {
+      font-size: 0.75rem;
+      color: #999;
+      padding: 0 0 0.5rem;
+      border-bottom: 1px solid #e5e7eb;
+      margin-bottom: 2rem;
+    }
+    .params-row code {
+      font-size: 0.6875rem;
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      padding: 0.1rem 0.3rem;
+      border-radius: 3px;
+      font-family: 'JetBrains Mono', monospace;
+      color: #555;
+    }
 
     /* Example */
     .example { padding: 2rem 0; border-top: 1px solid #e5e7eb; }
@@ -256,21 +253,6 @@
       margin-bottom: 0.5rem;
       text-transform: uppercase;
       letter-spacing: 0.06em;
-    }
-
-    .params {
-      font-size: 0.75rem;
-      color: #999;
-      padding: 0.5rem 0 0;
-    }
-    .params code {
-      font-size: 0.6875rem;
-      background: #fff;
-      border: 1px solid #e5e7eb;
-      padding: 0.1rem 0.3rem;
-      border-radius: 3px;
-      font-family: 'JetBrains Mono', monospace;
-      color: #555;
     }
 
     footer {
@@ -311,7 +293,7 @@
   <section class="hero">
     <div class="container">
       <h1>Real-time NYC transit for your agent.</h1>
-      <p>Citi Bike stations, subway arrivals, and bus predictions. Three transit modes, one API, $0.01 per lookup.</p>
+      <p>Citi Bike stations, subway arrivals, and bus predictions. Three transit modes, one API, $0.02 per lookup.</p>
       <p class="prompt">"Should I bike or take the subway from Williamsburg to SoHo?"</p>
       <a class="open-source" href="https://github.com/mmurrs/findmea">View source on GitHub &rarr;</a>
     </div>
@@ -333,17 +315,14 @@
 
     <section class="get-started">
       <p class="section-label">Get started</p>
-
       <div class="method">
         <p class="method-name">AgentCash</p>
         <code><span class="kw">$</span> npx agentcash add https://findmea-nyc.vercel.app</code>
       </div>
-
       <div class="method">
         <p class="method-name">MPP CLI</p>
         <code><span class="kw">$</span> mppx https://findmea-nyc.vercel.app/subway/nearest?lat=40.73&amp;lng=-73.99</code>
       </div>
-
       <div class="method">
         <p class="method-name">MPP SDK</p>
         <code><span class="cm">// fetch handles 402 automatically</span>
@@ -354,76 +333,85 @@ Mppx.create({ methods: [tempo({ account })] })
       </div>
     </section>
 
-    <!-- Bike -->
-    <section class="mode-section">
-      <div class="mode-header">
-        <span class="mode-dot bike-color"></span>
-        <span class="mode-title">Bike</span>
+    <section class="endpoints">
+      <p class="section-label">Endpoints</p>
+
+      <div class="params-row">
+        All endpoints: <code>lat</code> required &middot; <code>lng</code> required &middot; <code>limit</code> optional (default 3, max 10)
       </div>
-      <div class="mode-grid">
-        <div class="endpoint-card">
-          <h4>Pick up a bike <span class="price bike-price">$0.01</span></h4>
-          <p class="prompt-example">"Find me a Citi Bike near Bedford Ave"</p>
-          <p>Nearest stations with available bikes and e-bikes, sorted by walking distance.</p>
-          <code>GET /citibike/nearest?lat=40.71&amp;lng=-73.96</code>
+
+      <!-- Bike -->
+      <div class="mode-block">
+        <div class="mode-block-header">
+          <span class="mode-dot" style="background: #0073CE;"></span>
+          <span class="mode-block-title">Bike</span>
+          <span class="mode-block-price" style="background: #0073CE;">$0.02</span>
         </div>
-        <div class="endpoint-card">
-          <h4>Park a bike <span class="price bike-price">$0.01</span></h4>
-          <p class="prompt-example">"Where can I dock near Flatiron?"</p>
-          <p>Nearest stations with open docks for drop-off.</p>
-          <code>GET /citibike/dock?lat=40.74&amp;lng=-73.99</code>
+        <div class="mode-block-routes">
+          <span class="route-item"><span class="route-label">Pick up</span> <code>/citibike/nearest</code></span>
+          <span class="route-item"><span class="route-label">Park</span> <code>/citibike/dock</code></span>
         </div>
+        <p class="mode-block-meta">Real-time Citi Bike availability via GBFS. E-bikes, classic bikes, and docks.</p>
+      </div>
+
+      <!-- Subway -->
+      <div class="mode-block">
+        <div class="mode-block-header">
+          <span class="mode-dot" style="background: #FF6319;"></span>
+          <span class="mode-block-title">Subway</span>
+          <span class="mode-block-price" style="background: #FF6319;">$0.02</span>
+        </div>
+        <div class="mode-block-routes">
+          <span class="route-item"><span class="route-label">Next train</span> <code>/subway/nearest</code></span>
+        </div>
+        <p class="mode-block-meta">496 stations. GTFS-RT feeds from the MTA, updated every 30 seconds.</p>
+        <div class="subway-lines">
+          <span class="subway-pill" style="background:#EE352E">1</span>
+          <span class="subway-pill" style="background:#EE352E">2</span>
+          <span class="subway-pill" style="background:#EE352E">3</span>
+          <span class="subway-pill" style="background:#00933C">4</span>
+          <span class="subway-pill" style="background:#00933C">5</span>
+          <span class="subway-pill" style="background:#00933C">6</span>
+          <span class="subway-pill" style="background:#B933AD">7</span>
+          <span class="subway-pill" style="background:#0039A6">A</span>
+          <span class="subway-pill" style="background:#0039A6">C</span>
+          <span class="subway-pill" style="background:#0039A6">E</span>
+          <span class="subway-pill" style="background:#FF6319">B</span>
+          <span class="subway-pill" style="background:#FF6319">D</span>
+          <span class="subway-pill" style="background:#FF6319">F</span>
+          <span class="subway-pill" style="background:#FF6319">M</span>
+          <span class="subway-pill" style="background:#6CBE45">G</span>
+          <span class="subway-pill" style="background:#996633">J</span>
+          <span class="subway-pill" style="background:#996633">Z</span>
+          <span class="subway-pill" style="background:#A7A9AC">L</span>
+          <span class="subway-pill" style="background:#FCCC0A;color:#333">N</span>
+          <span class="subway-pill" style="background:#FCCC0A;color:#333">Q</span>
+          <span class="subway-pill" style="background:#FCCC0A;color:#333">R</span>
+          <span class="subway-pill" style="background:#FCCC0A;color:#333">W</span>
+          <span class="subway-pill" style="background:#808183">S</span>
+          <span class="subway-pill" style="background:#003DA5;font-size:0.5rem">SIR</span>
+        </div>
+      </div>
+
+      <!-- Bus -->
+      <div class="mode-block">
+        <div class="mode-block-header">
+          <span class="mode-dot" style="background: #00ADD0;"></span>
+          <span class="mode-block-title">Bus</span>
+          <span class="mode-block-price" style="background: #00ADD0;">$0.02</span>
+        </div>
+        <div class="mode-block-routes">
+          <span class="route-item"><span class="route-label">Next bus</span> <code>/bus/nearest</code></span>
+        </div>
+        <p class="mode-block-meta">Real-time arrival predictions via MTA SIRI. Routes, destinations, and ETAs.</p>
       </div>
     </section>
-
-    <!-- Subway -->
-    <section class="mode-section">
-      <div class="mode-header">
-        <span class="mode-dot subway-color"></span>
-        <span class="mode-title">Subway</span>
-      </div>
-      <div class="mode-grid">
-        <div class="endpoint-card">
-          <h4>Next train <span class="price subway-price">$0.01</span></h4>
-          <p class="prompt-example">"When's the next L at Union Square?"</p>
-          <p>Nearest stations with real-time arrivals — line, direction, and minutes until departure.</p>
-          <code>GET /subway/nearest?lat=40.73&amp;lng=-73.99</code>
-        </div>
-        <div class="endpoint-card" style="display: flex; flex-direction: column; justify-content: center;">
-          <p style="font-size: 0.8125rem; color: #888;">496 stations. 26 lines. GTFS-RT feeds from the MTA, updated every 30 seconds.</p>
-          <div class="params" style="border: none; padding-top: 0.5rem;">
-            All lines: <code>1</code> <code>2</code> <code>3</code> <code>4</code> <code>5</code> <code>6</code> <code>7</code> <code>A</code> <code>C</code> <code>E</code> <code>B</code> <code>D</code> <code>F</code> <code>M</code> <code>G</code> <code>J</code> <code>Z</code> <code>L</code> <code>N</code> <code>Q</code> <code>R</code> <code>W</code> <code>S</code> <code>SIR</code>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Bus -->
-    <section class="mode-section">
-      <div class="mode-header">
-        <span class="mode-dot bus-color"></span>
-        <span class="mode-title">Bus</span>
-      </div>
-      <div class="mode-grid">
-        <div class="endpoint-card">
-          <h4>Next bus <span class="price bus-price">$0.01</span></h4>
-          <p class="prompt-example">"Is there a bus near Broadway and Houston?"</p>
-          <p>Nearest stops with real-time arrival predictions, routes, destinations, and ETAs.</p>
-          <code>GET /bus/nearest?lat=40.73&amp;lng=-73.99</code>
-        </div>
-      </div>
-    </section>
-
-    <!-- Params -->
-    <div class="params" style="padding-bottom: 1rem;">
-      All endpoints: <code>lat</code> required &middot; <code>lng</code> required &middot; <code>limit</code> optional (default 3, max 10)
-    </div>
 
     <!-- Example responses -->
     <section class="example">
       <p class="section-label">Example responses</p>
 
-      <p class="example-tab"><span class="mode-dot bike-color" style="display: inline-block; width: 8px; height: 8px; vertical-align: middle; margin-right: 4px;"></span> /citibike/nearest</p>
+      <p class="example-tab"><span class="mode-dot" style="background:#0073CE;display:inline-block;width:8px;height:8px;vertical-align:middle;margin-right:4px;"></span> /citibike/nearest</p>
       <pre>{
   "results": [
     {
@@ -439,7 +427,7 @@ Mppx.create({ methods: [tempo({ account })] })
   ]
 }</pre>
 
-      <p class="example-tab"><span class="mode-dot subway-color" style="display: inline-block; width: 8px; height: 8px; vertical-align: middle; margin-right: 4px;"></span> /subway/nearest</p>
+      <p class="example-tab"><span class="mode-dot" style="background:#FF6319;display:inline-block;width:8px;height:8px;vertical-align:middle;margin-right:4px;"></span> /subway/nearest</p>
       <pre>{
   "results": [
     {
@@ -449,7 +437,6 @@ Mppx.create({ methods: [tempo({ account })] })
       "lines": ["N", "Q", "R", "W"],
       "arrivals": [
         { "line": "Q", "direction": "Uptown", "minutes": 1 },
-        { "line": "Q", "direction": "Downtown", "minutes": 1 },
         { "line": "W", "direction": "Uptown", "minutes": 3 },
         { "line": "R", "direction": "Downtown", "minutes": 4 }
       ],

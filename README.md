@@ -1,6 +1,6 @@
 # FindMeA — NYC Transit API
 
-Real-time NYC transit for agents. Citi Bike stations, subway arrivals, and bus predictions — $0.01/lookup via [Machine Payments Protocol](https://mpp.dev).
+Real-time NYC transit for agents. Citi Bike stations, subway arrivals, and bus predictions — $0.02/lookup via [Machine Payments Protocol](https://mpp.dev).
 
 **API:** [findmea-nyc.vercel.app](https://findmea-nyc.vercel.app) · **OpenAPI:** [/openapi.json](https://findmea-nyc.vercel.app/openapi.json)
 
@@ -34,7 +34,7 @@ npx agentcash add https://findmea-nyc.vercel.app
 
 ## Endpoints
 
-Five endpoints, $0.01 each via [Machine Payments Protocol](https://mpp.dev).
+Five endpoints, $0.02 each via [Machine Payments Protocol](https://mpp.dev).
 
 ### Bike
 

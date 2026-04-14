@@ -32,17 +32,17 @@ const mppx = Mppx.create({
 });
 
 const chargeCitibike = mppx.charge({
-  amount: "0.01",
+  amount: "0.02",
   description: "Citi Bike station lookup",
 });
 
 const chargeSubway = mppx.charge({
-  amount: "0.01",
+  amount: "0.02",
   description: "Subway arrival lookup",
 });
 
 const chargeBus = mppx.charge({
-  amount: "0.01",
+  amount: "0.02",
   description: "Bus arrival lookup",
 });
 
@@ -52,7 +52,7 @@ discovery(app, mppx, {
   info: {
     title: "FindMeA — NYC Transit API",
     description:
-      "Real-time NYC transit for agents. Citi Bike stations, subway arrivals, and bus predictions — $0.01 per lookup via MPP.",
+      "Real-time NYC transit for agents. Citi Bike stations, subway arrivals, and bus predictions — $0.02 per lookup via MPP.",
     version: "2.0.0",
   },
   serviceInfo: {

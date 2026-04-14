@@ -1,6 +1,6 @@
 # FindMeA — NYC Transit API
 
-> Real-time NYC transit for agents. Citi Bike stations, subway arrivals, and bus predictions — $0.01 per lookup via Machine Payments Protocol.
+> Real-time NYC transit for agents. Citi Bike stations, subway arrivals, and bus predictions — $0.02 per lookup via Machine Payments Protocol.
 
 ## What users ask
 
@@ -80,7 +80,7 @@ Returns the nearest bus stops with real-time arrival predictions. Includes route
 
 ## Payment
 
-All endpoints cost $0.01 per request via Machine Payments Protocol (MPP). Payment is handled automatically by MPP-compatible clients like AgentCash.
+All endpoints cost $0.02 per request via Machine Payments Protocol (MPP). Payment is handled automatically by MPP-compatible clients like AgentCash.
 
 ## Quick Start
 
