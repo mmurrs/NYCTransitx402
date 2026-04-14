@@ -85,5 +85,5 @@ All endpoints cost $0.01 per request via Machine Payments Protocol (MPP). Paymen
 ## Quick Start
 
 ```
-npx agentcash add https://citibike-mpp.vercel.app
+npx agentcash add https://findmea-nyc.vercel.app
 ```

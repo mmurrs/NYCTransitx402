@@ -2,7 +2,7 @@
 
 Real-time NYC transit for agents. Citi Bike stations, subway arrivals, and bus predictions — $0.01/lookup via [Machine Payments Protocol](https://mpp.dev).
 
-**API:** [citibike-mpp.vercel.app](https://citibike-mpp.vercel.app) · **OpenAPI:** [/openapi.json](https://citibike-mpp.vercel.app/openapi.json)
+**API:** [findmea-nyc.vercel.app](https://findmea-nyc.vercel.app) · **OpenAPI:** [/openapi.json](https://findmea-nyc.vercel.app/openapi.json)
 
 ## Quickstart
 
@@ -29,7 +29,7 @@ Your agent handles the location lookup, API call, and payment automatically.
 ## Use with AgentCash
 
 ```bash
-npx agentcash add https://citibike-mpp.vercel.app
+npx agentcash add https://findmea-nyc.vercel.app
 ```
 
 ## Endpoints

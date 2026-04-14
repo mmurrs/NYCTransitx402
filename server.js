@@ -65,7 +65,7 @@ discovery(app, mppx, {
       "bus",
     ],
     docs: {
-      homepage: "https://citibike-mpp.vercel.app", // TODO: update when Vercel project is renamed
+      homepage: "https://findmea-nyc.vercel.app",
     },
   },
   routes: [
