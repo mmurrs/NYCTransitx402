@@ -486,6 +486,10 @@ app.get("/llms.txt", (req, res) => {
   res.type("text/plain").sendFile(path.join(__dirname, "llms.txt"));
 });
 
+app.get("/skill.md", (req, res) => {
+  res.type("text/markdown").sendFile(path.join(__dirname, "skill.md"));
+});
+
 app.get("/favicon.svg", (req, res) => {
   res.sendFile(path.join(__dirname, "favicon.svg"));
 });
