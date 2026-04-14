@@ -1,4 +1,4 @@
-const BACKEND = process.env.BACKEND_URL || "http://34.10.163.40:8080";
+const BACKEND = process.env.BACKEND_URL || "http://34.21.141.59:8080";
 
 export default async function handler(req, res) {
   const path = req.url;
