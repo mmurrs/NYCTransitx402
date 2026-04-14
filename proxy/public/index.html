@@ -146,6 +146,37 @@
       background: #fff;
     }
     .get-started .container { max-width: 720px; }
+
+    .wallet-tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .wallet-tab {
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: #888;
+      background: none;
+      border: none;
+      padding: 0.625rem 1rem;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s ease;
+    }
+    .wallet-tab:hover { color: #111; }
+    .wallet-tab.active {
+      color: #111;
+      border-bottom-color: #111;
+    }
+
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+
     .steps {
       display: flex;
       flex-direction: column;
@@ -190,6 +221,8 @@
       border-radius: 6px;
       color: #333;
       overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
     }
 
     /* Services (endpoints) */
@@ -275,44 +308,6 @@
       line-height: 1;
     }
 
-    /* Comparison section */
-    .comparison {
-      padding: 2.5rem 0;
-      border-top: 1px solid #e5e7eb;
-      background: #fff;
-    }
-    .comparison-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1rem;
-    }
-    .comparison-card {
-      padding: 1.25rem;
-      border-radius: 8px;
-      border: 1px solid #e5e7eb;
-    }
-    .comparison-card.old { background: #fafbfc; }
-    .comparison-card.new { background: #f5f9fc; border-color: #d4e5f2; }
-    .comparison-label {
-      font-size: 0.6875rem;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: #999;
-      font-weight: 600;
-      margin-bottom: 0.75rem;
-    }
-    .comparison-card.new .comparison-label { color: #0073CE; }
-    .comparison-card h3 {
-      font-size: 0.875rem;
-      font-weight: 700;
-      margin-bottom: 0.5rem;
-      color: #111;
-    }
-    .comparison-card p {
-      font-size: 0.75rem;
-      color: #666;
-      line-height: 1.6;
-    }
 
     /* Example responses */
     .examples {
@@ -380,37 +375,6 @@
       letter-spacing: 0.06em;
     }
 
-    /* CTA section */
-    .cta {
-      padding: 2.5rem 0;
-      border-top: 1px solid #e5e7eb;
-      text-align: center;
-    }
-    .cta h2 {
-      font-size: 1.25rem;
-      font-weight: 800;
-      margin-bottom: 0.5rem;
-      color: #111;
-      letter-spacing: -0.02em;
-    }
-    .cta p {
-      font-size: 0.875rem;
-      color: #666;
-      margin-bottom: 1.25rem;
-    }
-    .cta-button {
-      display: inline-block;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.8125rem;
-      font-weight: 600;
-      color: #fff;
-      background: #111;
-      padding: 0.75rem 1.5rem;
-      border-radius: 6px;
-      text-decoration: none;
-      border: 1px solid #111;
-    }
-    .cta-button:hover { background: #333; border-color: #333; }
 
     footer {
       border-top: 1px solid #e5e7eb;
@@ -441,7 +405,8 @@
       nav .links { gap: 0.875rem; }
       nav .links a { font-size: 0.6875rem; }
       .hero h1 { font-size: 1.5rem; }
-      .comparison-grid { grid-template-columns: 1fr; }
+      .wallet-tabs { flex-wrap: wrap; }
+      .wallet-tab { font-size: 0.75rem; padding: 0.5rem 0.75rem; }
       .resource-grid { grid-template-columns: 1fr; }
       footer .footer-inner { flex-direction: column; align-items: flex-start; }
     }
@@ -501,30 +466,90 @@
 
   <section class="get-started">
     <div class="container">
-      <p class="section-label">Get started with AgentCash</p>
-      <div class="steps">
-        <div class="step">
-          <div class="step-number">1</div>
-          <div class="step-content">
-            <h3>Fund your wallet</h3>
-            <p>Get USDC from the AgentCash faucet or deposit directly to your wallet.</p>
-            <code>npx agentcash onboard</code>
+      <p class="section-label">Get started</p>
+
+      <div class="wallet-tabs">
+        <button class="wallet-tab active" data-tab="agentcash">AgentCash</button>
+        <button class="wallet-tab" data-tab="privy">Privy</button>
+        <button class="wallet-tab" data-tab="tempo">Tempo Wallet</button>
+      </div>
+
+      <div class="tab-content active" id="agentcash">
+        <div class="steps">
+          <div class="step">
+            <div class="step-number">1</div>
+            <div class="step-content">
+              <h3>Set up AgentCash</h3>
+              <code>$ npx agentcash onboard</code>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-number">2</div>
+            <div class="step-content">
+              <h3>Try it</h3>
+              <code>$ npx agentcash try https://findmea-nyc.vercel.app</code>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-number">3</div>
+            <div class="step-content">
+              <h3>Add to your agent</h3>
+              <code>$ npx agentcash add https://findmea-nyc.vercel.app</code>
+            </div>
           </div>
         </div>
-        <div class="step">
-          <div class="step-number">2</div>
-          <div class="step-content">
-            <h3>Try an endpoint</h3>
-            <p>Call any FindMeA endpoint. Payment is handled automatically via MPP.</p>
-            <code>npx agentcash try https://findmea-nyc.vercel.app/subway/nearest?lat=40.73&lng=-73.99</code>
+      </div>
+
+      <div class="tab-content" id="privy">
+        <div class="steps">
+          <div class="step">
+            <div class="step-number">1</div>
+            <div class="step-content">
+              <h3>Create a Privy server wallet</h3>
+              <p>Fund with USDC on Base or Tempo</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-number">2</div>
+            <div class="step-content">
+              <h3>Configure MPP client</h3>
+              <code>import { Mppx, tempo } from 'mppx/client'
+Mppx.create({ methods: [tempo({ account: privyWallet })] })</code>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-number">3</div>
+            <div class="step-content">
+              <h3>Make requests</h3>
+              <code>await fetch('https://findmea-nyc.vercel.app/subway/nearest?lat=40.73&lng=-73.99')</code>
+            </div>
           </div>
         </div>
-        <div class="step">
-          <div class="step-number">3</div>
-          <div class="step-content">
-            <h3>Add to your agent</h3>
-            <p>Register FindMeA with your agent. It will discover all endpoints automatically.</p>
-            <code>npx agentcash add https://findmea-nyc.vercel.app</code>
+      </div>
+
+      <div class="tab-content" id="tempo">
+        <div class="steps">
+          <div class="step">
+            <div class="step-number">1</div>
+            <div class="step-content">
+              <h3>Create a Tempo wallet</h3>
+              <p>Fund with USDC on Tempo network</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-number">2</div>
+            <div class="step-content">
+              <h3>Configure MPP client</h3>
+              <code>import { Mppx, tempo } from 'mppx/client'
+Mppx.create({ methods: [tempo({ account: tempoWallet })] })</code>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-number">3</div>
+            <div class="step-content">
+              <h3>Make requests</h3>
+              <code>await fetch('https://findmea-nyc.vercel.app/citibike/nearest?lat=40.71&lng=-73.96')</code>
+            </div>
           </div>
         </div>
       </div>
@@ -607,24 +632,6 @@
     </section>
 
   </div>
-
-  <section class="comparison">
-    <div class="container">
-      <p class="section-label">Old way vs Agent way</p>
-      <div class="comparison-grid">
-        <div class="comparison-card old">
-          <p class="comparison-label">Before</p>
-          <h3>Tab switching</h3>
-          <p>Check Citibike map. Open Google Maps. Look up subway times. Compare options. Make a decision.</p>
-        </div>
-        <div class="comparison-card new">
-          <p class="comparison-label">With FindMeA</p>
-          <h3>One prompt</h3>
-          <p>Ask your agent "Should I bike or take the subway to SoHo?" and get real-time recommendations instantly.</p>
-        </div>
-      </div>
-    </div>
-  </section>
 
   <div class="container">
 
@@ -712,14 +719,6 @@
     </div>
   </section>
 
-  <section class="cta">
-    <div class="container">
-      <h2>Ready to start building?</h2>
-      <p>Add FindMeA to your agent in 30 seconds</p>
-      <a href="https://agentcash.dev" class="cta-button">Get AgentCash</a>
-    </div>
-  </section>
-
   <footer>
     <div class="footer-inner">
       <div class="footer-links">
@@ -733,6 +732,25 @@
       <span class="footer-note">Payments settle in USDC via Tempo</span>
     </div>
   </footer>
+
+  <script>
+    // Wallet tab switching
+    document.querySelectorAll('.wallet-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        const targetTab = tab.dataset.tab;
+
+        // Update active tab button
+        document.querySelectorAll('.wallet-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+
+        // Update active tab content
+        document.querySelectorAll('.tab-content').forEach(content => {
+          content.classList.remove('active');
+        });
+        document.getElementById(targetTab).classList.add('active');
+      });
+    });
+  </script>
 
 </body>
 </html>
