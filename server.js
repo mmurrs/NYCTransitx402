@@ -2,7 +2,7 @@ import express from "express";
 import { fileURLToPath } from "url";
 import path from "path";
 import { createRequire } from "module";
-import { Mppx, tempo, discovery } from "mppx/express";
+import { createDual402, dualDiscovery } from "./dual402.js";
 
 const require = createRequire(import.meta.url);
 const GtfsRealtimeBindings = require("gtfs-realtime-bindings");
@@ -11,49 +11,58 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 8080;
 
-// CORS
+// CORS — expose both MPP and x402 payment headers
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "*");
-  res.setHeader("Access-Control-Expose-Headers", "WWW-Authenticate");
+  res.setHeader(
+    "Access-Control-Expose-Headers",
+    "WWW-Authenticate, Payment-Receipt, PAYMENT-REQUIRED, PAYMENT-RESPONSE"
+  );
   if (req.method === "OPTIONS") return res.sendStatus(204);
   next();
 });
 
-// --- Payment setup ---
+// --- Payment setup (dual x402 + MPP) ---
 
-const USDC_TEMPO = process.env.USDC_TEMPO;
-const RECIPIENT = process.env.RECIPIENT;
-
-const mppx = Mppx.create({
-  methods: [tempo.charge({ currency: USDC_TEMPO, recipient: RECIPIENT })],
-  secretKey: process.env.MPP_SECRET_KEY,
+const dual = createDual402({
+  mpp: {
+    currency: process.env.USDC_TEMPO,
+    recipient: process.env.MPP_RECIPIENT,
+    secretKey: process.env.MPP_SECRET_KEY,
+  },
+  x402: {
+    payTo: process.env.X402_PAYEE_ADDRESS,
+    network: process.env.X402_NETWORK || "eip155:84532",
+    facilitatorUrl:
+      process.env.X402_FACILITATOR_URL || "https://x402.org/facilitator",
+  },
 });
 
-const chargeCitibike = mppx.charge({
+const chargeCitibike = dual.charge({
   amount: "0.02",
   description: "Citi Bike station lookup",
 });
 
-const chargeSubway = mppx.charge({
+const chargeSubway = dual.charge({
   amount: "0.02",
   description: "Subway arrival lookup",
 });
 
-const chargeBus = mppx.charge({
+const chargeBus = dual.charge({
   amount: "0.02",
   description: "Bus arrival lookup",
 });
 
-// --- OpenAPI discovery ---
+// --- Discovery (mounts /openapi.json + /.well-known/x402) ---
 
-discovery(app, mppx, {
+dualDiscovery(app, dual, {
   info: {
     title: "FindMeA — NYC Transit API",
     description:
-      "Real-time NYC transit for agents. Citi Bike stations, subway arrivals, and bus predictions — $0.02 per lookup via MPP.",
-    version: "2.0.0",
+      "Real-time NYC transit for agents. Citi Bike stations, subway arrivals, and bus predictions — $0.02 per lookup via MPP or x402.",
+    version: "2.1.0",
   },
   serviceInfo: {
     categories: [
@@ -468,19 +477,6 @@ app.get(
 );
 
 // --- Static routes ---
-
-app.get("/.well-known/x402", (req, res) => {
-  const base = `${req.protocol}://${req.hostname}`;
-  res.json({
-    version: 1,
-    resources: [
-      `${base}/citibike/nearest`,
-      `${base}/citibike/dock`,
-      `${base}/subway/nearest`,
-      `${base}/bus/nearest`,
-    ],
-  });
-});
 
 app.get("/llms.txt", (req, res) => {
   res.type("text/plain").sendFile(path.join(__dirname, "llms.txt"));
