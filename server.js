@@ -29,7 +29,7 @@ app.use((req, res, next) => {
 const dual = createDual402({
   mpp: {
     currency: process.env.USDC_TEMPO,
-    recipient: process.env.MPP_RECIPIENT,
+    recipient: process.env.MPP_RECIPIENT || process.env.RECIPIENT,
     secretKey: process.env.MPP_SECRET_KEY,
     testnet: process.env.MPP_TESTNET === "true",
   },
