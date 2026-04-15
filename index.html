@@ -4,14 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FindMeA — NYC Transit API</title>
-  <meta name="description" content="Real-time NYC transit for agents. Citi Bike, Subway, Bus — $0.02 per lookup via MPP or x402.">
+  <meta name="description" content="Real-time NYC transit for agents. Citi Bike, Subway, Bus — $0.02 per check via MPP or x402.">
   <meta property="og:title" content="FindMeA — NYC Transit API">
-  <meta property="og:description" content="Real-time NYC transit for agents. Citi Bike, Subway, Bus — $0.02 per lookup via MPP or x402.">
+  <meta property="og:description" content="Real-time NYC transit for agents. Citi Bike, Subway, Bus — $0.02 per check via MPP or x402.">
   <meta property="og:image" content="https://findmea-nyc.vercel.app/og.svg">
   <meta property="og:url" content="https://findmea-nyc.vercel.app">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="FindMeA — NYC Transit API">
-  <meta name="twitter:description" content="Real-time NYC transit for agents. Citi Bike, Subway, Bus — $0.02 per lookup via MPP or x402.">
+  <meta name="twitter:description" content="Real-time NYC transit for agents. Citi Bike, Subway, Bus — $0.02 per check via MPP or x402.">
   <meta name="twitter:image" content="https://findmea-nyc.vercel.app/og.svg">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -103,25 +103,131 @@
       margin-bottom: 1rem;
     }
 
-    /* Things you can say */
-    .prompts { padding: 2.5rem 0; }
-    .prompt-grid {
+    /* Coverage map preview */
+    .coverage {
+      padding: 2.5rem 0;
+      border-top: 1px solid #e5e7eb;
+    }
+    .coverage-inner {
       display: grid;
-      grid-template-columns: 1fr;
-      gap: 0.5rem;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      align-items: start;
+    }
+    .coverage-content {
+      padding-right: 0.5rem;
+      padding-top: 0.25rem;
+    }
+    .coverage-title {
+      font-size: 1.125rem;
+      font-weight: 700;
+      color: #111;
+      line-height: 1.4;
+      margin-bottom: 1.5rem;
+    }
+    .coverage-stats {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .coverage-stat {
+      display: flex;
+      align-items: center;
+      gap: 0.625rem;
+    }
+    .stat-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .stat-text {
+      font-size: 0.875rem;
+      color: #555;
+      font-weight: 500;
+    }
+    .map-wrap {
+      position: relative;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid #e5e7eb;
+      background: #111;
+      height: 280px;
+    }
+    .map-preview {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+    .map-expand {
+      position: absolute;
+      bottom: 0.625rem;
+      right: 0.625rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.35rem 0.65rem;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(8px);
+      border-radius: 6px;
+      color: #ccc;
+      font-size: 0.6875rem;
+      font-weight: 500;
+      text-decoration: none;
+      transition: background 0.15s, color 0.15s;
+      z-index: 10;
+    }
+    .map-expand:hover { background: rgba(0,0,0,0.85); color: #fff; }
+
+    @media (max-width: 768px) {
+      .coverage-inner {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+      }
+      .coverage-content {
+        padding-right: 0;
+      }
+      .map-wrap {
+        height: 220px;
+      }
+    }
+
+    /* Things you can say — now inline with prompts */
+    .prompts { padding: 0; }
+    .prompt-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 0.375rem;
     }
     .prompt-card {
       font-size: 0.8125rem;
       color: #555;
       font-style: italic;
-      padding: 0.875rem 1rem;
+      padding: 0.6rem 0.875rem;
       background: #fff;
       border: 1px solid #e5e7eb;
       border-radius: 6px;
       line-height: 1.4;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      cursor: default;
     }
     .prompt-card::before { content: "\201C"; color: #ccc; margin-right: 2px; }
-    .prompt-card::after { content: "\201D"; color: #ccc; margin-left: 2px; }
+    .prompt-text::after { content: "\201D"; color: #ccc; margin-left: 2px; }
+    .prompt-copy {
+      flex-shrink: 0;
+      width: 24px; height: 24px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 4px;
+      border: none; background: none;
+      color: #ccc; cursor: pointer;
+      transition: color 0.15s, background 0.15s;
+    }
+    .prompt-copy:hover { color: #666; background: #f0f0f0; }
+    .prompt-copy.copied { color: #0a0; }
 
     /* Get started */
     .get-started {
@@ -420,27 +526,54 @@
       <h1>Real-time NYC transit for your agent</h1>
       <p class="tagline">Three transit modes, one API. Citi Bike stations, subway arrivals, and bus predictions in real time.</p>
       <div class="pricing-row">
-        <span class="price-tag">$0.02 per lookup</span>
-        <span class="volume">~50 requests/dollar</span>
+        <span class="price-tag">$0.02 per check</span>
       </div>
     </div>
   </section>
 
-  <div class="container">
-
-    <section class="prompts">
-      <p class="section-label">Things you can say</p>
-      <div class="prompt-grid">
-        <div class="prompt-card">Find me a Citi Bike near Bedford Ave — I'm heading to SoHo</div>
-        <div class="prompt-card">When's the next L train at Union Square?</div>
-        <div class="prompt-card">Should I bike or take the subway from Williamsburg to SoHo?</div>
-        <div class="prompt-card">Where can I dock near the WeWork in Flatiron?</div>
-        <div class="prompt-card">Is there a bus near Broadway and Houston?</div>
-        <div class="prompt-card">I'm running late — what's the fastest way to get there?</div>
+  <section class="coverage">
+    <div class="container">
+      <div class="coverage-inner">
+        <div class="coverage-content">
+          <p class="section-label">Things you can say</p>
+          <section class="prompts">
+            <div class="prompt-grid">
+              <div class="prompt-card"><span class="prompt-text">Find me a Citi Bike near Bedford Ave</span><button class="prompt-copy" onclick="copyPrompt(this)" title="Copy"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="5" y="5" width="9" height="9" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M11 5V3.5A1.5 1.5 0 009.5 2h-6A1.5 1.5 0 002 3.5v6A1.5 1.5 0 003.5 11H5" stroke="currentColor" stroke-width="1.5"/></svg></button></div>
+              <div class="prompt-card"><span class="prompt-text">When's the next L train at Union Square?</span><button class="prompt-copy" onclick="copyPrompt(this)" title="Copy"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="5" y="5" width="9" height="9" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M11 5V3.5A1.5 1.5 0 009.5 2h-6A1.5 1.5 0 002 3.5v6A1.5 1.5 0 003.5 11H5" stroke="currentColor" stroke-width="1.5"/></svg></button></div>
+              <div class="prompt-card"><span class="prompt-text">Should I bike or subway from Williamsburg to SoHo?</span><button class="prompt-copy" onclick="copyPrompt(this)" title="Copy"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="5" y="5" width="9" height="9" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M11 5V3.5A1.5 1.5 0 009.5 2h-6A1.5 1.5 0 002 3.5v6A1.5 1.5 0 003.5 11H5" stroke="currentColor" stroke-width="1.5"/></svg></button></div>
+              <div class="prompt-card"><span class="prompt-text">Where can I dock near the WeWork in Flatiron?</span><button class="prompt-copy" onclick="copyPrompt(this)" title="Copy"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="5" y="5" width="9" height="9" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M11 5V3.5A1.5 1.5 0 009.5 2h-6A1.5 1.5 0 002 3.5v6A1.5 1.5 0 003.5 11H5" stroke="currentColor" stroke-width="1.5"/></svg></button></div>
+              <div class="prompt-card"><span class="prompt-text">Is there a bus near Broadway and Houston?</span><button class="prompt-copy" onclick="copyPrompt(this)" title="Copy"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="5" y="5" width="9" height="9" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M11 5V3.5A1.5 1.5 0 009.5 2h-6A1.5 1.5 0 002 3.5v6A1.5 1.5 0 003.5 11H5" stroke="currentColor" stroke-width="1.5"/></svg></button></div>
+            </div>
+          </section>
+        </div>
+        <div>
+          <div class="map-wrap">
+            <iframe src="viz.html?embed" class="map-preview" title="NYC Transit Coverage Map"></iframe>
+            <a href="viz.html" class="map-expand">
+              Expand
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1 9L9 1M9 1H3M9 1v6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </a>
+          </div>
+          <ul class="coverage-stats" style="margin-top: 0.75rem;">
+            <li class="coverage-stat">
+              <span class="stat-dot" style="background: #0073CE;"></span>
+              <span class="stat-text">2,400+ CitiBike stations</span>
+            </li>
+            <li class="coverage-stat">
+              <span class="stat-dot" style="background: #FF6319;"></span>
+              <span class="stat-text">496 subway stations</span>
+            </li>
+            <li class="coverage-stat">
+              <span class="stat-dot" style="background: #00ADD0;"></span>
+              <span class="stat-text">2,229 bus stops</span>
+            </li>
+          </ul>
+        </div>
       </div>
-    </section>
+    </div>
+  </section>
 
-  </div>
+  <div class="container"></div>
 
   <section class="get-started">
     <div class="container">
@@ -728,6 +861,19 @@ Mppx.create({ methods: [tempo({ account: tempoWallet })] })</code>
         document.getElementById(targetTab).classList.add('active');
       });
     });
+  </script>
+  <script>
+    function copyPrompt(btn) {
+      const text = btn.parentElement.querySelector('.prompt-text').textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        btn.classList.add('copied');
+        btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.5 12L13 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+        setTimeout(() => {
+          btn.classList.remove('copied');
+          btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="5" y="5" width="9" height="9" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M11 5V3.5A1.5 1.5 0 009.5 2h-6A1.5 1.5 0 002 3.5v6A1.5 1.5 0 003.5 11H5" stroke="currentColor" stroke-width="1.5"/></svg>';
+        }, 1500);
+      });
+    }
   </script>
 
 </body>

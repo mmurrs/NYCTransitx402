@@ -5,6 +5,6 @@
   <text x="100" y="380" font-family="system-ui, -apple-system, sans-serif" font-weight="400" font-size="26" fill="#555">
     <tspan fill="#0073CE">Bike</tspan> · <tspan fill="#FF6319">Subway</tspan> · <tspan fill="#00ADD0">Bus</tspan>
   </text>
-  <text x="100" y="440" font-family="monospace" font-weight="400" font-size="24" fill="#555">$0.02 / lookup · Machine Payments Protocol</text>
-  <text x="100" y="540" font-family="monospace" font-weight="400" font-size="20" fill="#888">citibike-mpp.vercel.app</text>
+  <text x="100" y="440" font-family="monospace" font-weight="400" font-size="24" fill="#555">$0.02 / check · MPP + x402</text>
+  <text x="100" y="540" font-family="monospace" font-weight="400" font-size="20" fill="#888">findmea-nyc.vercel.app</text>
 </svg>

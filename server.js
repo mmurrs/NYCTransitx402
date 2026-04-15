@@ -43,17 +43,17 @@ const dual = createDual402({
 
 const chargeCitibike = dual.charge({
   amount: "0.02",
-  description: "Citi Bike station lookup",
+  description: "Citi Bike station check",
 });
 
 const chargeSubway = dual.charge({
   amount: "0.02",
-  description: "Subway arrival lookup",
+  description: "Subway arrival check",
 });
 
 const chargeBus = dual.charge({
   amount: "0.02",
-  description: "Bus arrival lookup",
+  description: "Bus arrival check",
 });
 
 // --- Discovery (mounts /openapi.json + /.well-known/x402) ---
@@ -62,7 +62,7 @@ dualDiscovery(app, dual, {
   info: {
     title: "FindMeA — NYC Transit API",
     description:
-      "Real-time NYC transit for agents. Citi Bike stations, subway arrivals, and bus predictions — $0.02 per lookup via MPP or x402.",
+      "Real-time NYC transit for agents. Citi Bike stations, subway arrivals, and bus predictions — $0.02 per check via MPP or x402.",
     version: "2.1.0",
   },
   serviceInfo: {

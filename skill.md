@@ -9,7 +9,7 @@ FindMeA provides real-time transit data for New York City across three modes:
 - **Subway**: Get live train arrivals for 496 stations across all 26 MTA lines
 - **Bus**: Real-time bus arrival predictions with routes and destinations
 
-All lookups cost $0.02 via MPP or x402. Both payment protocols are accepted on every endpoint.
+All checks cost $0.02 via MPP or x402. Both payment protocols are accepted on every endpoint.
 
 ## Prerequisites
 

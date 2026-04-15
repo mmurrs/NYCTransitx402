@@ -216,7 +216,7 @@ export function dualDiscovery(app, dual, config) {
   const mppxRoutes = config.routes.map((r) => ({
     ...r,
     handler: dual._mppx.charge({
-      amount: r.handler._dualAmount ?? "0.01",
+      amount: r.handler._dualAmount ?? "0.02",
       description: r.summary,
     }),
   }));
