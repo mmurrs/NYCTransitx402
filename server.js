@@ -31,6 +31,7 @@ const dual = createDual402({
     currency: process.env.USDC_TEMPO,
     recipient: process.env.MPP_RECIPIENT,
     secretKey: process.env.MPP_SECRET_KEY,
+    testnet: process.env.MPP_TESTNET === "true",
   },
   x402: {
     payTo: process.env.X402_PAYEE_ADDRESS,

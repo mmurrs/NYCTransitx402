@@ -30,6 +30,7 @@ export function createDual402(config) {
       tempo.charge({
         currency: config.mpp.currency,
         recipient: config.mpp.recipient,
+        ...(config.mpp.testnet && { testnet: true }),
       }),
     ],
     secretKey: config.mpp.secretKey,

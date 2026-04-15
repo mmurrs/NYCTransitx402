@@ -63,7 +63,12 @@ echo "Starting server..."
 lsof -ti:8080 | xargs kill 2>/dev/null || true
 sleep 1
 
-node --env-file="$REPO/.env" "$REPO/server.js" &
+ENV_FILE="$REPO/.env.test"
+if [ ! -f "$ENV_FILE" ]; then
+  ENV_FILE="$REPO/.env"
+fi
+echo "Using env: $ENV_FILE"
+node --env-file="$ENV_FILE" "$REPO/server.js" &
 SERVER_PID=$!
 sleep 3
 
@@ -186,5 +191,10 @@ echo ""
 echo "━━━ Results ━━━"
 echo ""
 echo "  $PASS passed, $FAIL failed, $SKIP skipped"
-[ "$FAIL" -eq 0 ] && echo "" && echo "  All checks passed." || echo "" && echo "  ⚠ Some checks failed."
+echo ""
+if [ "$FAIL" -eq 0 ]; then
+  echo "  All checks passed."
+else
+  echo "  ⚠ Some checks failed."
+fi
 echo ""
