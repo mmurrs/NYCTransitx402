@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Real Time NYC Transit</title>
+  <title>FindMeA — NYC Transit API</title>
   <meta name="description" content="Real-time NYC transit for agents. Citi Bike, Subway, Bus — $0.02 per check via MPP or x402.">
-  <meta property="og:title" content="Real Time NYC Transit">
+  <meta property="og:title" content="FindMeA — NYC Transit API">
   <meta property="og:description" content="Real-time NYC transit for agents. Citi Bike, Subway, Bus — $0.02 per check via MPP or x402.">
   <meta property="og:image" content="https://findmea-nyc.vercel.app/og.svg">
   <meta property="og:url" content="https://findmea-nyc.vercel.app">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Real Time NYC Transit">
+  <meta name="twitter:title" content="FindMeA — NYC Transit API">
   <meta name="twitter:description" content="Real-time NYC transit for agents. Citi Bike, Subway, Bus — $0.02 per check via MPP or x402.">
   <meta name="twitter:image" content="https://findmea-nyc.vercel.app/og.svg">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
@@ -219,38 +219,6 @@
       z-index: 10;
     }
     .map-expand:hover { background: rgba(0,0,0,0.85); color: #fff; }
-    .map-title {
-      position: absolute;
-      top: 0.625rem;
-      left: 0.625rem;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.35rem;
-      padding: 0.3rem 0.6rem;
-      background: rgba(0,0,0,0.7);
-      backdrop-filter: blur(8px);
-      border-radius: 6px;
-      color: #eee;
-      font-size: 0.6875rem;
-      font-weight: 600;
-      letter-spacing: 0.02em;
-      z-index: 10;
-      pointer-events: none;
-    }
-    .coverage-box {
-      display: flex;
-      justify-content: center;
-      gap: 1.25rem;
-      margin-top: 0.625rem;
-      padding: 0.5rem 0.75rem;
-      border: 1px solid #e5e7eb;
-      border-radius: 6px;
-      background: #fff;
-    }
-    .coverage-box .coverage-stat {
-      padding: 0.125rem 0;
-      gap: 0.4rem;
-    }
 
     @media (max-width: 768px) {
       .coverage-inner {
@@ -262,10 +230,6 @@
       }
       .map-wrap {
         height: 220px;
-      }
-      .coverage-box {
-        flex-wrap: wrap;
-        gap: 0.5rem 1rem;
       }
     }
 
@@ -586,7 +550,7 @@
         <rect width="32" height="32" rx="6" fill="#111"/>
         <text x="16" y="22" text-anchor="middle" font-family="system-ui" font-weight="700" font-size="18" fill="#fff">F</text>
       </svg>
-      Real Time NYC Transit
+      FindMeA
     </a>
     <div class="links">
       <a href="/openapi.json">OpenAPI</a>
@@ -599,21 +563,21 @@
 
   <section class="hero">
     <div class="container">
-      <h1>Find the best way around the city</h1>
-      <p class="tagline">Real-time NYC transit info for your agent. Citi Bike, subway, and bus — one API.</p>
+      <h1>Real-time NYC transit for your agent</h1>
+      <p class="tagline">Three transit modes, one API. Citi Bike stations, subway arrivals, and bus predictions in real time.</p>
       <div class="pricing-row">
         <span class="price-tag">$0.02 per check</span>
-        <a href="https://verify-sepolia.eigencloud.xyz/app/0xc4eb6dD8aF1dEF5D6daa1320261fE9A1A447C4e5" class="eigen-badge" target="_blank" rel="noopener" title="This service runs on verified EigenCloud infrastructure">
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-            <path d="M8 0.5L1.5 3.5v4.5c0 3.9 2.7 7.1 6.5 8 3.8-.9 6.5-4.1 6.5-8V3.5L8 0.5z" fill="#1a73e8"/>
-            <path d="M5.25 8.25L7 10.25l3.75-4.5" stroke="#fff" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          <span class="eigen-badge-text">
-            <span class="eigen-badge-title">Verifiable Service</span>
-            <span class="eigen-badge-sub">Deployed on EigenCloud</span>
-          </span>
-        </a>
       </div>
+      <a href="https://verify-sepolia.eigencloud.xyz/app/0xc4eb6dD8aF1dEF5D6daa1320261fE9A1A447C4e5" class="eigen-badge" target="_blank" rel="noopener" title="This service runs on verified EigenCloud infrastructure">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+          <path d="M8 0.5L1.5 3.5v4.5c0 3.9 2.7 7.1 6.5 8 3.8-.9 6.5-4.1 6.5-8V3.5L8 0.5z" fill="#1a73e8"/>
+          <path d="M5.25 8.25L7 10.25l3.75-4.5" stroke="#fff" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="eigen-badge-text">
+          <span class="eigen-badge-title">Verifiable Service</span>
+          <span class="eigen-badge-sub">Deployed on EigenCloud</span>
+        </span>
+      </a>
     </div>
   </section>
 
@@ -634,14 +598,14 @@
         </div>
         <div>
           <div class="map-wrap">
-            <span class="map-title">NYC Coverage</span>
             <iframe src="viz.html?embed" class="map-preview" title="NYC Transit Coverage Map"></iframe>
             <a href="viz.html" class="map-expand">
               Expand
               <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1 9L9 1M9 1H3M9 1v6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </a>
           </div>
-          <ul class="coverage-box">
+          <p style="margin-top: 0.625rem; font-size: 0.625rem; color: #bbb; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase;">Click to toggle</p>
+          <ul class="coverage-stats" style="margin-top: 0.25rem;">
             <li class="coverage-stat" data-layer="bike" onclick="toggleMapLayer(this)">
               <span class="stat-dot" style="background: #0073CE;"></span>
               <span class="stat-text">2,400+ Citi Bike stations</span>
