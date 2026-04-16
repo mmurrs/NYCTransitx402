@@ -7,13 +7,14 @@ Real-time NYC transit for agents. Citi Bike stations, subway arrivals, and bus p
 ## Quickstart
 
 ```bash
-git clone https://github.com/mmurrs/findmea.git
-cd findmea
+git clone https://github.com/mmurrs/findmea-nyc.git
+cd findmea-nyc
+cp .env.example .env   # fill in your values
 npm install
 npm start
 ```
 
-Server runs on `http://localhost:8080`.
+Server runs on `http://localhost:8080`. See `.env.example` for required environment variables.
 
 ## Things you can say
 
@@ -87,12 +88,28 @@ Returns nearest stops with real-time arrival predictions — route, destination,
 }
 ```
 
-## Docker
+## Deploy to EigenCloud
+
+This service is designed to run as a verifiable agent service on [EigenCloud](https://eigencloud.xyz). Deploy with the `ecloud` CLI:
 
 ```bash
-docker build -t findmea .
-docker run -p 8080:8080 findmea
+ecloud compute app create --env-file .env
 ```
+
+The included `Dockerfile` handles the build. Set `BACKEND_URL` in your Vercel proxy to point to the deployed backend.
+
+## Contributing
+
+The main files you'll want to look at:
+
+- **`server.js`** — Express routes and data source logic (GBFS, GTFS-RT, SIRI)
+- **`dual402.js`** — Payment middleware (x402 + MPP). Both protocols must work on every route.
+- **`index.html`** — Landing page (single file, inline CSS). Must be synced to `proxy/public/index.html` after changes.
+- **`data/subway-stations.json`** — Static station data (496 stations with lat/lng/lines/feeds)
+
+## Data Sources
+
+Transit data provided by the MTA and CitiBike. Data may not be accurate, complete, or current. This service is not affiliated with or endorsed by the MTA or CitiBike.
 
 ## License
 
