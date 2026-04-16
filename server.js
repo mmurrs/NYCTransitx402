@@ -239,8 +239,8 @@ async function fetchGBFS() {
 
 app.get(
   "/citibike/nearest",
-  validateLookupQuery,
   chargeCitibike,
+  validateLookupQuery,
   async (req, res) => {
     const { lat, lng, limit } = req.lookupQuery;
     try {
@@ -284,8 +284,8 @@ app.get(
 
 app.get(
   "/citibike/dock",
-  validateLookupQuery,
   chargeCitibike,
+  validateLookupQuery,
   async (req, res) => {
     const { lat, lng, limit } = req.lookupQuery;
     try {
@@ -411,8 +411,8 @@ function getArrivalsForStation(feed, stationId) {
 
 app.get(
   "/subway/nearest",
-  validateLookupQuery,
   chargeSubway,
+  validateLookupQuery,
   async (req, res) => {
     const { lat, lng, limit } = req.lookupQuery;
     try {
@@ -469,7 +469,6 @@ const BUS_API_KEY = process.env.MTA_BUS_API_KEY;
 
 app.get(
   "/bus/nearest",
-  validateLookupQuery,
   (req, res, next) => {
     if (!BUS_API_KEY) {
       return res.status(503).json({
@@ -480,6 +479,7 @@ app.get(
     next();
   },
   chargeBus,
+  validateLookupQuery,
   async (req, res) => {
 
     const { lat, lng, limit } = req.lookupQuery;
