@@ -156,7 +156,7 @@ Users might say:
 
 - OpenAPI spec: https://findmea-nyc.vercel.app/openapi.json
 - Documentation: https://findmea-nyc.vercel.app/llms.txt
-- GitHub: https://github.com/mmurrs/findmea
+- GitHub: https://github.com/mmurrs/NYCTransitLive-x402
 - AgentCash: https://agentcash.dev
 - MPP: https://mpp.dev
 - x402: https://x402.org
