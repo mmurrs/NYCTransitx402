@@ -29,15 +29,17 @@ app.use((req, res, next) => {
 
 // --- Payment setup (dual x402 + MPP) ---
 
+const RECIPIENT_WALLET = process.env.RECIPIENT_WALLET;
+
 const dual = createDual402({
   mpp: {
     currency: process.env.USDC_TEMPO,
-    recipient: process.env.MPP_RECIPIENT || process.env.RECIPIENT,
+    recipient: process.env.MPP_RECIPIENT || RECIPIENT_WALLET || process.env.RECIPIENT,
     secretKey: process.env.MPP_SECRET_KEY,
     testnet: process.env.MPP_TESTNET === "true",
   },
   x402: {
-    payTo: process.env.X402_PAYEE_ADDRESS,
+    payTo: process.env.X402_PAYEE_ADDRESS || RECIPIENT_WALLET,
     network: process.env.X402_NETWORK || "eip155:84532",
     facilitatorUrl:
       process.env.X402_FACILITATOR_URL || "https://x402.org/facilitator",
