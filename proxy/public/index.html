@@ -568,7 +568,8 @@
       <div class="pricing-row">
         <span class="price-tag">$0.02 per check</span>
       </div>
-      <a href="https://verify-sepolia.eigencloud.xyz/app/0xc4eb6dD8aF1dEF5D6daa1320261fE9A1A447C4e5" class="eigen-badge" target="_blank" rel="noopener" title="This service runs on verified EigenCloud infrastructure">
+      <!-- Verification badge — update href to your EigenCloud app dashboard URL -->
+      <a href="#" class="eigen-badge" target="_blank" rel="noopener" title="This service runs on verified infrastructure">
         <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
           <path d="M8 0.5L1.5 3.5v4.5c0 3.9 2.7 7.1 6.5 8 3.8-.9 6.5-4.1 6.5-8V3.5L8 0.5z" fill="#1a73e8"/>
           <path d="M5.25 8.25L7 10.25l3.75-4.5" stroke="#fff" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
@@ -635,8 +636,8 @@
 
       <div class="wallet-tabs">
         <button class="wallet-tab active" data-tab="agentcash">AgentCash</button>
-        <button class="wallet-tab" data-tab="privy">Privy</button>
-        <button class="wallet-tab" data-tab="tempo">Tempo Wallet</button>
+        <button class="wallet-tab" data-tab="x402">x402</button>
+        <button class="wallet-tab" data-tab="mpp">MPP</button>
       </div>
 
       <div class="tab-content active" id="agentcash">
@@ -665,55 +666,55 @@
         </div>
       </div>
 
-      <div class="tab-content" id="privy">
+      <div class="tab-content" id="x402">
         <div class="steps">
           <div class="step">
             <div class="step-number">1</div>
             <div class="step-content">
-              <h3>Create a Privy server wallet</h3>
-              <p>Fund with USDC on Base or Tempo</p>
+              <h3>Install x402 client</h3>
+              <code>npm install @x402/fetch</code>
             </div>
           </div>
           <div class="step">
             <div class="step-number">2</div>
             <div class="step-content">
-              <h3>Configure MPP client</h3>
-              <code>import { Mppx, tempo } from 'mppx/client'
-Mppx.create({ methods: [tempo({ account: privyWallet })] })</code>
+              <h3>Configure with a Base wallet</h3>
+              <code>import { wrapFetch } from '@x402/fetch'
+const fetch402 = wrapFetch(fetch, wallet)</code>
             </div>
           </div>
           <div class="step">
             <div class="step-number">3</div>
             <div class="step-content">
               <h3>Make requests</h3>
-              <code>await fetch('https://findmea-nyc.vercel.app/subway/nearest?lat=40.73&lng=-73.99')</code>
+              <code>await fetch402('https://findmea-nyc.vercel.app/subway/nearest?lat=40.73&lng=-73.99')</code>
             </div>
           </div>
         </div>
       </div>
 
-      <div class="tab-content" id="tempo">
+      <div class="tab-content" id="mpp">
         <div class="steps">
           <div class="step">
             <div class="step-number">1</div>
             <div class="step-content">
-              <h3>Create a Tempo wallet</h3>
-              <p>Fund with USDC on Tempo network</p>
+              <h3>Install MPP client</h3>
+              <code>npm install mppx</code>
             </div>
           </div>
           <div class="step">
             <div class="step-number">2</div>
             <div class="step-content">
-              <h3>Configure MPP client</h3>
-              <code>import { Mppx, tempo } from 'mppx/client'
-Mppx.create({ methods: [tempo({ account: tempoWallet })] })</code>
+              <h3>Configure with a USDC wallet</h3>
+              <code>import { Mppx } from 'mppx/client'
+const mpp = Mppx.create({ account: wallet })</code>
             </div>
           </div>
           <div class="step">
             <div class="step-number">3</div>
             <div class="step-content">
               <h3>Make requests</h3>
-              <code>await fetch('https://findmea-nyc.vercel.app/citibike/nearest?lat=40.71&lng=-73.96')</code>
+              <code>await mpp.fetch('https://findmea-nyc.vercel.app/citibike/nearest?lat=40.71&lng=-73.96')</code>
             </div>
           </div>
         </div>
@@ -889,7 +890,7 @@ Mppx.create({ methods: [tempo({ account: tempoWallet })] })</code>
         <a href="/skill.md">skill.md</a>
         <a href="/llms.txt">llms.txt</a>
       </div>
-      <span class="footer-note">Payments settle in USDC via Tempo (MPP) or Base (x402)</span>
+      <span class="footer-note">Payments settle in USDC via MPP or x402 (Base)</span>
     </div>
   </footer>
 

@@ -15,7 +15,7 @@ All checks cost $0.02 via MPP or x402. Both payment protocols are accepted on ev
 
 The agent needs a compatible payment method (any one):
 - **AgentCash**: Run `npx agentcash onboard` — handles both MPP and x402 automatically
-- **MPP**: Use the `mppx` client library with a Tempo wallet
+- **MPP**: Use the `mppx` client library with a USDC wallet
 - **x402**: Use `@x402/fetch` with a Base wallet holding USDC
 
 ## Endpoints
@@ -156,7 +156,7 @@ Users might say:
 
 - OpenAPI spec: https://findmea-nyc.vercel.app/openapi.json
 - Documentation: https://findmea-nyc.vercel.app/llms.txt
-- GitHub: https://github.com/mmurrs/findmea
+- GitHub: https://github.com/mmurrs/findmea-nyc
 - AgentCash: https://agentcash.dev
 - MPP: https://mpp.dev
 - x402: https://x402.org

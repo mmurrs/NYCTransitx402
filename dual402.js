@@ -2,7 +2,7 @@
  * dual402.js — Express middleware that accepts both x402 and MPP payments.
  *
  * x402: Generates PAYMENT-REQUIRED header, verifies via facilitator.
- * MPP:  Delegates to mppx (stateless HMAC challenges, Tempo settlement).
+ * MPP:  Delegates to mppx (stateless HMAC challenges, USDC settlement).
  *
  * No new npm dependencies — x402 side is just HTTP calls to the facilitator.
  */
