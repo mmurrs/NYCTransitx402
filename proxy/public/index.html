@@ -604,21 +604,23 @@
               <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1 9L9 1M9 1H3M9 1v6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </a>
           </div>
-          <p style="margin-top: 0.625rem; font-size: 0.625rem; color: #bbb; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase;">Click to toggle</p>
-          <ul class="coverage-stats" style="margin-top: 0.25rem;">
-            <li class="coverage-stat" data-layer="bike" onclick="toggleMapLayer(this)">
-              <span class="stat-dot" style="background: #0073CE;"></span>
-              <span class="stat-text">2,400+ Citi Bike stations</span>
-            </li>
-            <li class="coverage-stat" data-layer="subway" onclick="toggleMapLayer(this)">
-              <span class="stat-dot" style="background: #FF6319;"></span>
-              <span class="stat-text">496 subway stations</span>
-            </li>
-            <li class="coverage-stat" data-layer="bus" onclick="toggleMapLayer(this)">
-              <span class="stat-dot" style="background: #00ADD0;"></span>
-              <span class="stat-text">2,229 bus stops</span>
-            </li>
-          </ul>
+          <div style="margin-top: 0.625rem; border: 1px solid #e5e7eb; border-radius: 6px; background: #fff; padding: 0.5rem 0.75rem 0.4rem;">
+            <ul class="coverage-stats" style="margin: 0;">
+              <li class="coverage-stat" data-layer="subway" onclick="toggleMapLayer(this)">
+                <span class="stat-dot" style="background: #FF6319;"></span>
+                <span class="stat-text">496 subway stations</span>
+              </li>
+              <li class="coverage-stat" data-layer="bike" onclick="toggleMapLayer(this)">
+                <span class="stat-dot" style="background: #0073CE;"></span>
+                <span class="stat-text">2,400+ Citi Bike stations</span>
+              </li>
+              <li class="coverage-stat" data-layer="bus" onclick="toggleMapLayer(this)">
+                <span class="stat-dot" style="background: #00ADD0;"></span>
+                <span class="stat-text">2,229 bus stops</span>
+              </li>
+            </ul>
+            <p style="font-size: 0.5625rem; color: #bbb; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; margin-top: 0.375rem; border-top: 1px solid #f0f0f0; padding-top: 0.375rem;">Click to toggle layers</p>
+          </div>
         </div>
       </div>
     </div>
