@@ -40,7 +40,7 @@ const dual = createDual402({
   },
   x402: {
     payTo: process.env.X402_PAYEE_ADDRESS || RECIPIENT_WALLET,
-    network: process.env.X402_NETWORK || "eip155:84532",
+    network: process.env.X402_NETWORK || "eip155:8453",
     facilitatorUrl:
       process.env.X402_FACILITATOR_URL || "https://x402.org/facilitator",
   },
@@ -90,12 +90,12 @@ const locationParams = [
 
 dualDiscovery(app, dual, {
   info: {
-    title: "Real Time NYC Transit",
+    title: "NYC Transit Live",
     description:
       "Real-time NYC transit for agents. Citi Bike stations, subway arrivals, and bus predictions — $0.02 per check via MPP or x402.",
     version: "2.1.0",
     "x-guidance":
-      "Real Time NYC Transit provides real-time NYC transit data. All endpoints require lat/lng coordinates. " +
+      "NYC Transit Live provides real-time NYC transit data. All endpoints require lat/lng coordinates. " +
       "Use GET /citibike/nearest to find available bikes or e-bikes near a location. " +
       "Use GET /citibike/dock to find open docks for parking a bike. " +
       "Use GET /subway/nearest to get upcoming train arrivals at nearby stations. " +
@@ -565,5 +565,5 @@ app.get("/", (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`[BOOT] FindMeA port=${PORT} x402=${dual._x402Config.network} mpp=${dual._mppx ? "configured" : "missing"} bus_key=${BUS_API_KEY ? "configured" : "missing"} stations=${subwayStations.length}`);
+  console.log(`[BOOT] NYC Transit Live port=${PORT} x402=${dual._x402Config.network} mpp=${dual._mppx ? "configured" : "missing"} bus_key=${BUS_API_KEY ? "configured" : "missing"} stations=${subwayStations.length}`);
 });

@@ -1,7 +1,7 @@
 {
-  "name": "findmea",
+  "name": "nyc-transit-live",
   "version": "2.0.0",
-  "description": "Real Time NYC Transit — Real-time NYC transit for agents. Citi Bike, Subway, Bus — $0.02 per check via MPP + x402.",
+  "description": "NYC Transit Live — Real-time NYC transit for agents. Citi Bike, Subway, Bus — $0.02 per check via MPP + x402.",
   "main": "server.js",
   "type": "module",
   "scripts": {
