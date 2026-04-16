@@ -355,6 +355,15 @@
       word-break: break-all;
     }
 
+    .setup-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.6875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #999;
+      margin-bottom: 0.375rem;
+    }
+
     /* Services (endpoints) */
     .services {
       padding: 2.5rem 0;
@@ -670,23 +679,8 @@
           <div class="step">
             <div class="step-number">1</div>
             <div class="step-content">
-              <h3>Create a Privy server wallet</h3>
-              <p>Fund with USDC on Base or Tempo</p>
-            </div>
-          </div>
-          <div class="step">
-            <div class="step-number">2</div>
-            <div class="step-content">
-              <h3>Configure MPP client</h3>
-              <code>import { Mppx, tempo } from 'mppx/client'
-Mppx.create({ methods: [tempo({ account: privyWallet })] })</code>
-            </div>
-          </div>
-          <div class="step">
-            <div class="step-number">3</div>
-            <div class="step-content">
-              <h3>Make requests</h3>
-              <code>await fetch('https://findmea-nyc.vercel.app/subway/nearest?lat=40.73&lng=-73.99')</code>
+              <p class="setup-label">SETUP PROMPT</p>
+              <code>Set up https://agents.privy.io/skill.md</code>
             </div>
           </div>
         </div>
@@ -697,23 +691,8 @@ Mppx.create({ methods: [tempo({ account: privyWallet })] })</code>
           <div class="step">
             <div class="step-number">1</div>
             <div class="step-content">
-              <h3>Create a Tempo wallet</h3>
-              <p>Fund with USDC on Tempo network</p>
-            </div>
-          </div>
-          <div class="step">
-            <div class="step-number">2</div>
-            <div class="step-content">
-              <h3>Configure MPP client</h3>
-              <code>import { Mppx, tempo } from 'mppx/client'
-Mppx.create({ methods: [tempo({ account: tempoWallet })] })</code>
-            </div>
-          </div>
-          <div class="step">
-            <div class="step-number">3</div>
-            <div class="step-content">
-              <h3>Make requests</h3>
-              <code>await fetch('https://findmea-nyc.vercel.app/citibike/nearest?lat=40.71&lng=-73.96')</code>
+              <p class="setup-label">SETUP PROMPT</p>
+              <code>Read https://tempo.xyz/SKILL.md and set up a Tempo Wallet. Fund it with USDC.</code>
             </div>
           </div>
         </div>
