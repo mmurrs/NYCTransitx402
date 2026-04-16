@@ -131,6 +131,29 @@ else
   fail "/openapi.json → unexpected response"
 fi
 
+echo ""
+echo "━━━ AgentCash Discovery Validation ━━━"
+echo ""
+
+DISC_OUTPUT=$(npx -y @agentcash/discovery@latest discover "http://localhost:8080" 2>&1)
+DISC_WARNINGS=$(echo "$DISC_OUTPUT" | grep -c "^\s*\[warn\]" || true)
+DISC_ROUTES=$(echo "$DISC_OUTPUT" | grep -c "paid" || true)
+
+echo "$DISC_OUTPUT" | sed 's/^/    /'
+echo ""
+
+if [ "$DISC_ROUTES" -eq 4 ]; then
+  pass "AgentCash discover → 4 paid routes found"
+else
+  fail "AgentCash discover → expected 4 paid routes, got $DISC_ROUTES"
+fi
+
+if [ "$DISC_WARNINGS" -eq 0 ]; then
+  pass "AgentCash discover → 0 warnings"
+else
+  fail "AgentCash discover → $DISC_WARNINGS warnings"
+fi
+
 # ── Test 2: MPP payment ────────────────────────────────────────────────
 
 echo ""

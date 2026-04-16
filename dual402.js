@@ -7,7 +7,7 @@
  * No new npm dependencies — x402 side is just HTTP calls to the facilitator.
  */
 
-import { Mppx, tempo, discovery as mppxDiscovery } from "mppx/express";
+import { Mppx, tempo } from "mppx/express";
 
 // ── Default USDC addresses per CAIP-2 network ───────────────────────────
 
@@ -232,42 +232,95 @@ async function x402Settle(paymentSignature, facilitatorUrl) {
   return res.json();
 }
 
-// ── Discovery (mounts both /openapi.json and /.well-known/x402) ─────────
+// ── Discovery (mounts /openapi.json and /.well-known/x402) ─────────────
 
 /**
+ * Build an AgentCash-compliant OpenAPI 3.1.0 spec.
+ *
  * @param {import('express').Express} app
  * @param {object} dual - return value of createDual402()
  * @param {object} config - { info, serviceInfo, routes }
+ *   route shape: { method, path, handler, summary, operationId, tags, parameters }
  */
 export function dualDiscovery(app, dual, config) {
-  // mppx discovery needs routes with native mppx charge handlers (for _internal metadata).
-  // Re-create mppx charge handlers purely for discovery — they aren't used for actual routing.
-  const mppxRoutes = config.routes.map((r) => ({
-    ...r,
-    handler: dual._mppx.charge({
-      amount: r.handler._dualAmount ?? "0.02",
-      description: r.summary,
-    }),
-  }));
+  const paths = {};
 
-  mppxDiscovery(app, dual._mppx, {
-    info: config.info,
-    serviceInfo: config.serviceInfo,
-    routes: mppxRoutes,
+  for (const r of config.routes) {
+    const amount = r.handler._dualAmount ?? "0.02";
+
+    const operation = {
+      operationId: r.operationId,
+      summary: r.summary,
+      tags: r.tags ?? [],
+      "x-payment-info": {
+        price: {
+          mode: "fixed",
+          currency: "USD",
+          amount: parseFloat(amount).toFixed(6),
+        },
+        protocols: [
+          { x402: {} },
+          { mpp: { method: "", intent: "", currency: "" } },
+        ],
+      },
+      responses: {
+        200: {
+          description: "Successful response",
+          content: {
+            "application/json": {
+              schema: r.responseSchema ?? {
+                type: "object",
+                properties: {
+                  results: { type: "array", items: { type: "object" } },
+                },
+                required: ["results"],
+              },
+            },
+          },
+        },
+        402: { description: "Payment Required" },
+      },
+    };
+
+    // Input schema — query parameters for GET routes
+    if (r.parameters?.length) {
+      operation.parameters = r.parameters;
+    }
+
+    paths[r.path] = { [r.method]: operation };
+  }
+
+  const spec = {
+    openapi: "3.1.0",
+    info: {
+      title: config.info.title,
+      version: config.info.version,
+      description: config.info.description,
+      ...(config.info["x-guidance"] && {
+        "x-guidance": config.info["x-guidance"],
+      }),
+    },
+    "x-discovery": {
+      ownershipProofs: config.ownershipProofs ?? [],
+    },
+    paths,
+  };
+
+  if (config.serviceInfo) {
+    spec["x-service-info"] = config.serviceInfo;
+  }
+
+  app.get("/openapi.json", (req, res) => {
+    res.json(spec);
   });
 
-  // x402 discovery (resource list)
+  // /.well-known/x402 v1 — simple resource list
   app.get("/.well-known/x402", (req, res) => {
-    const base = process.env.BASE_URL || `${req.protocol}://${req.get("host")}`;
     res.json({
-      version: 2,
-      resources: config.routes.map((r) => ({
-        url: `${base}${r.path}`,
-        description: r.summary,
-      })),
-      payTo: dual._x402Config.payTo,
-      network: dual._x402Config.network,
-      asset: dual._x402Asset,
+      version: 1,
+      resources: config.routes.map(
+        (r) => `${r.method.toUpperCase()} ${r.path}`
+      ),
     });
   });
 }
