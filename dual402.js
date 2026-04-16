@@ -79,7 +79,7 @@ export function createDual402(config) {
               { amount: amountRaw, payTo: config.x402.payTo }
             );
             if (verified.valid) {
-              console.log(`[PAY] x402 verified amount=${amount} network=${config.x402.network}${verified.txHash ? ` tx=${verified.txHash}` : ""}`);
+              console.log(`[PAY] x402 verified amount=${amount} network=${config.x402.network}`);
               // Settle async — don't block the response
               x402Settle(x402Sig, config.x402.facilitatorUrl)
                 .then(() => console.log(`[PAY] x402 settled amount=${amount}`))
