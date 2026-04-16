@@ -151,7 +151,10 @@ export function createDual402(config) {
             return origStatus(code);
           };
 
-          return mppCharge(req, res, next);
+          return mppCharge(req, res, (...args) => {
+            console.log(`[PAY] mpp verified amount=${amount}`);
+            next(...args);
+          });
         } catch (err) {
           console.error("[dual402] middleware error:", err);
           next(err);
