@@ -1,4 +1,4 @@
-# FindMeA — NYC Transit API
+# Real Time NYC Transit
 
 Real-time NYC transit for agents. Citi Bike stations, subway arrivals, and bus predictions — $0.02/check via [MPP](https://mpp.dev) or [x402](https://x402.org).
 

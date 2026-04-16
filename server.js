@@ -90,12 +90,12 @@ const locationParams = [
 
 dualDiscovery(app, dual, {
   info: {
-    title: "FindMeA — NYC Transit API",
+    title: "Real Time NYC Transit",
     description:
       "Real-time NYC transit for agents. Citi Bike stations, subway arrivals, and bus predictions — $0.02 per check via MPP or x402.",
     version: "2.1.0",
     "x-guidance":
-      "FindMeA provides real-time NYC transit data. All endpoints require lat/lng coordinates. " +
+      "Real Time NYC Transit provides real-time NYC transit data. All endpoints require lat/lng coordinates. " +
       "Use GET /citibike/nearest to find available bikes or e-bikes near a location. " +
       "Use GET /citibike/dock to find open docks for parking a bike. " +
       "Use GET /subway/nearest to get upcoming train arrivals at nearby stations. " +
@@ -547,5 +547,5 @@ app.get("/", (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`FindMeA NYC Transit API running on http://localhost:${PORT}`);
+  console.log(`Real Time NYC Transit running on http://localhost:${PORT}`);
 });

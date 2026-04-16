@@ -1,4 +1,4 @@
-# FindMeA — NYC Transit API
+# Real Time NYC Transit
 
 ## What this is
 Real-time NYC transit API for AI agents. Citi Bike, Subway, Bus — $0.02/check via MPP or x402.
@@ -81,7 +81,7 @@ Push directly to main, no PRs. This is a personal project.
 Branch `feat/dual-402` has all dual-protocol work — merge to main when validated.
 
 ## Branding
-- Brand: **FindMeA** — transit modes are Bike (#0073CE), Subway (#FF6319), Bus (#00ADD0)
+- Brand: **Real Time NYC Transit** — transit modes are Bike (#0073CE), Subway (#FF6319), Bus (#00ADD0)
 - Subway lines use actual MTA colors as 22px circle pills
 - Inspired by StableEnrich/AgentRes patterns but differentiated by transit-specific colors and prompt→response UX
 - OG images, meta tags, README, llms.txt, skill.md must all stay consistent when branding changes

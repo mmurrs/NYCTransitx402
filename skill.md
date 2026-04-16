@@ -1,10 +1,10 @@
-# FindMeA — NYC Transit Skill
+# Real Time NYC Transit Skill
 
 Use this skill to help users find real-time NYC transit options: Citi Bike stations, subway arrivals, and bus predictions.
 
-## What FindMeA does
+## What Real Time NYC Transit does
 
-FindMeA provides real-time transit data for New York City across three modes:
+Real Time NYC Transit provides real-time transit data for New York City across three modes:
 - **Citi Bike**: Find available bikes or open docks with e-bike counts and walking times
 - **Subway**: Get live train arrivals for 496 stations across all 26 MTA lines
 - **Bus**: Real-time bus arrival predictions with routes and destinations
@@ -33,8 +33,8 @@ Returns nearest stations with available bikes. Includes classic bikes, e-bikes, 
   "results": [
     {
       "name": "Bedford Ave & N 7 St",
-      "distance_feet": 279,
-      "walk_minutes": 1,
+      "distance_feet": 380,
+      "walk_minutes": 2,
       "ebikes_available": 3,
       "bikes_available": 11,
       "docks_available": 6,
@@ -65,8 +65,8 @@ Returns nearest subway stations with live train arrivals. Data updated every 30 
   "results": [
     {
       "name": "Bedford Ave",
-      "distance_feet": 350,
-      "walk_minutes": 1,
+      "distance_feet": 470,
+      "walk_minutes": 2,
       "lines": ["L"],
       "arrivals": [
         { "line": "L", "direction": "Uptown", "minutes": 3 },
@@ -92,8 +92,8 @@ Returns nearest bus stops with real-time arrival predictions from MTA SIRI feeds
   "results": [
     {
       "name": "Broadway & Houston St",
-      "distance_feet": 180,
-      "walk_minutes": 0,
+      "distance_feet": 240,
+      "walk_minutes": 1,
       "routes": ["M1", "M55"],
       "arrivals": [
         { "route": "M1", "destination": "Harlem", "minutes": 2 },
