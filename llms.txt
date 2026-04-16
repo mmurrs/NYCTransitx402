@@ -1,4 +1,4 @@
-# Real Time NYC Transit
+# NYC Transit Live
 
 > Real-time NYC transit for agents. Citi Bike stations, subway arrivals, and bus predictions — $0.02 per check via MPP or x402.
 

@@ -1,14 +1,14 @@
-# Real Time NYC Transit
+# NYC Transit Live
 
 Real-time NYC transit for agents. Citi Bike stations, subway arrivals, and bus predictions — $0.02/check via [MPP](https://mpp.dev) or [x402](https://x402.org).
 
-**API:** [findmea-nyc.vercel.app](https://findmea-nyc.vercel.app) · **OpenAPI:** [/openapi.json](https://findmea-nyc.vercel.app/openapi.json) · **x402:** [/.well-known/x402](https://findmea-nyc.vercel.app/.well-known/x402)
+**OpenAPI:** [/openapi.json](https://findmea-nyc.vercel.app/openapi.json) · **x402:** [/.well-known/x402](https://findmea-nyc.vercel.app/.well-known/x402)
 
 ## Quickstart
 
 ```bash
-git clone https://github.com/mmurrs/findmea-nyc.git
-cd findmea-nyc
+git clone https://github.com/mmurrs/NYCTransitLive-x402.git
+cd NYCTransitLive-x402
 cp .env.example .env   # fill in your values
 npm install
 npm start
@@ -30,7 +30,7 @@ Your agent handles the location lookup, API call, and payment automatically.
 ## Use with AgentCash
 
 ```bash
-npx agentcash add https://findmea-nyc.vercel.app
+npx agentcash add <YOUR_BACKEND_URL>
 ```
 
 ## Endpoints

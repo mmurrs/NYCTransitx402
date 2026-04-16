@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FindMeA — NYC Transit API</title>
+  <title>NYC Transit Live</title>
   <meta name="description" content="Real-time NYC transit for agents. Citi Bike, Subway, Bus — $0.02 per check via MPP or x402.">
-  <meta property="og:title" content="FindMeA — NYC Transit API">
+  <meta property="og:title" content="NYC Transit Live">
   <meta property="og:description" content="Real-time NYC transit for agents. Citi Bike, Subway, Bus — $0.02 per check via MPP or x402.">
   <meta property="og:image" content="https://findmea-nyc.vercel.app/og.svg">
   <meta property="og:url" content="https://findmea-nyc.vercel.app">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="FindMeA — NYC Transit API">
+  <meta name="twitter:title" content="NYC Transit Live">
   <meta name="twitter:description" content="Real-time NYC transit for agents. Citi Bike, Subway, Bus — $0.02 per check via MPP or x402.">
   <meta name="twitter:image" content="https://findmea-nyc.vercel.app/og.svg">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
@@ -548,9 +548,9 @@
     <a class="logo" href="/">
       <svg width="20" height="20" viewBox="0 0 32 32">
         <rect width="32" height="32" rx="6" fill="#111"/>
-        <text x="16" y="22" text-anchor="middle" font-family="system-ui" font-weight="700" font-size="18" fill="#fff">F</text>
+        <text x="16" y="22" text-anchor="middle" font-family="system-ui" font-weight="700" font-size="18" fill="#fff">N</text>
       </svg>
-      FindMeA
+      NYC Transit Live
     </a>
     <div class="links">
       <a href="/openapi.json">OpenAPI</a>
@@ -563,13 +563,12 @@
 
   <section class="hero">
     <div class="container">
-      <h1>Real-time NYC transit for your agent</h1>
-      <p class="tagline">Three transit modes, one API. Citi Bike stations, subway arrivals, and bus predictions in real time.</p>
+      <h1>Find the best way around the city</h1>
+      <p class="tagline">Real-time NYC transit info for your agent. Citi Bike, subway, and bus — one API.</p>
       <div class="pricing-row">
         <span class="price-tag">$0.02 per check</span>
       </div>
-      <!-- Verification badge — update href to your EigenCloud app dashboard URL -->
-      <a href="#" class="eigen-badge" target="_blank" rel="noopener" title="This service runs on verified infrastructure">
+      <a href="https://verify.eigencloud.xyz/app/YOUR_APP_ID" class="eigen-badge" target="_blank" rel="noopener" title="This service runs on verified EigenCloud infrastructure">
         <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
           <path d="M8 0.5L1.5 3.5v4.5c0 3.9 2.7 7.1 6.5 8 3.8-.9 6.5-4.1 6.5-8V3.5L8 0.5z" fill="#1a73e8"/>
           <path d="M5.25 8.25L7 10.25l3.75-4.5" stroke="#fff" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
@@ -636,8 +635,8 @@
 
       <div class="wallet-tabs">
         <button class="wallet-tab active" data-tab="agentcash">AgentCash</button>
-        <button class="wallet-tab" data-tab="x402">x402</button>
-        <button class="wallet-tab" data-tab="mpp">MPP</button>
+        <button class="wallet-tab" data-tab="privy">Privy</button>
+        <button class="wallet-tab" data-tab="tempo">Tempo Wallet</button>
       </div>
 
       <div class="tab-content active" id="agentcash">
@@ -666,55 +665,55 @@
         </div>
       </div>
 
-      <div class="tab-content" id="x402">
+      <div class="tab-content" id="privy">
         <div class="steps">
           <div class="step">
             <div class="step-number">1</div>
             <div class="step-content">
-              <h3>Install x402 client</h3>
-              <code>npm install @x402/fetch</code>
+              <h3>Create a Privy server wallet</h3>
+              <p>Fund with USDC on Base or Tempo</p>
             </div>
           </div>
           <div class="step">
             <div class="step-number">2</div>
             <div class="step-content">
-              <h3>Configure with a Base wallet</h3>
-              <code>import { wrapFetch } from '@x402/fetch'
-const fetch402 = wrapFetch(fetch, wallet)</code>
+              <h3>Configure MPP client</h3>
+              <code>import { Mppx, tempo } from 'mppx/client'
+Mppx.create({ methods: [tempo({ account: privyWallet })] })</code>
             </div>
           </div>
           <div class="step">
             <div class="step-number">3</div>
             <div class="step-content">
               <h3>Make requests</h3>
-              <code>await fetch402('https://findmea-nyc.vercel.app/subway/nearest?lat=40.73&lng=-73.99')</code>
+              <code>await fetch('https://findmea-nyc.vercel.app/subway/nearest?lat=40.73&lng=-73.99')</code>
             </div>
           </div>
         </div>
       </div>
 
-      <div class="tab-content" id="mpp">
+      <div class="tab-content" id="tempo">
         <div class="steps">
           <div class="step">
             <div class="step-number">1</div>
             <div class="step-content">
-              <h3>Install MPP client</h3>
-              <code>npm install mppx</code>
+              <h3>Create a Tempo wallet</h3>
+              <p>Fund with USDC on Tempo network</p>
             </div>
           </div>
           <div class="step">
             <div class="step-number">2</div>
             <div class="step-content">
-              <h3>Configure with a USDC wallet</h3>
-              <code>import { Mppx } from 'mppx/client'
-const mpp = Mppx.create({ account: wallet })</code>
+              <h3>Configure MPP client</h3>
+              <code>import { Mppx, tempo } from 'mppx/client'
+Mppx.create({ methods: [tempo({ account: tempoWallet })] })</code>
             </div>
           </div>
           <div class="step">
             <div class="step-number">3</div>
             <div class="step-content">
               <h3>Make requests</h3>
-              <code>await mpp.fetch('https://findmea-nyc.vercel.app/citibike/nearest?lat=40.71&lng=-73.96')</code>
+              <code>await fetch('https://findmea-nyc.vercel.app/citibike/nearest?lat=40.71&lng=-73.96')</code>
             </div>
           </div>
         </div>
@@ -890,7 +889,7 @@ const mpp = Mppx.create({ account: wallet })</code>
         <a href="/skill.md">skill.md</a>
         <a href="/llms.txt">llms.txt</a>
       </div>
-      <span class="footer-note">Payments settle in USDC via MPP or x402 (Base)</span>
+      <span class="footer-note">Payments settle in USDC via Tempo (MPP) or Base (x402)</span>
     </div>
   </footer>
 

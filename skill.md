@@ -1,10 +1,10 @@
-# Real Time NYC Transit Skill
+# NYC Transit Live Skill
 
 Use this skill to help users find real-time NYC transit options: Citi Bike stations, subway arrivals, and bus predictions.
 
-## What Real Time NYC Transit does
+## What NYC Transit Live does
 
-Real Time NYC Transit provides real-time transit data for New York City across three modes:
+NYC Transit Live provides real-time transit data for New York City across three modes:
 - **Citi Bike**: Find available bikes or open docks with e-bike counts and walking times
 - **Subway**: Get live train arrivals for 496 stations across all 26 MTA lines
 - **Bus**: Real-time bus arrival predictions with routes and destinations
@@ -15,7 +15,7 @@ All checks cost $0.02 via MPP or x402. Both payment protocols are accepted on ev
 
 The agent needs a compatible payment method (any one):
 - **AgentCash**: Run `npx agentcash onboard` — handles both MPP and x402 automatically
-- **MPP**: Use the `mppx` client library with a USDC wallet
+- **MPP**: Use the `mppx` client library with a Tempo wallet
 - **x402**: Use `@x402/fetch` with a Base wallet holding USDC
 
 ## Endpoints
@@ -156,7 +156,7 @@ Users might say:
 
 - OpenAPI spec: https://findmea-nyc.vercel.app/openapi.json
 - Documentation: https://findmea-nyc.vercel.app/llms.txt
-- GitHub: https://github.com/mmurrs/findmea-nyc
+- GitHub: https://github.com/mmurrs/NYCTransitLive-x402
 - AgentCash: https://agentcash.dev
 - MPP: https://mpp.dev
 - x402: https://x402.org
