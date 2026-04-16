@@ -9,13 +9,14 @@ FindMeA provides real-time transit data for New York City across three modes:
 - **Subway**: Get live train arrivals for 496 stations across all 26 MTA lines
 - **Bus**: Real-time bus arrival predictions with routes and destinations
 
-All lookups cost $0.02 via Machine Payments Protocol (MPP).
+All checks cost $0.02 via MPP or x402. Both payment protocols are accepted on every endpoint.
 
 ## Prerequisites
 
-The agent needs an MPP-compatible payment method:
-- **AgentCash**: Run `npx agentcash onboard` to fund a wallet, then `npx agentcash add https://findmea-nyc.vercel.app`
-- **MPP SDK**: Use the `mppx` client library with a Tempo account
+The agent needs a compatible payment method (any one):
+- **AgentCash**: Run `npx agentcash onboard` — handles both MPP and x402 automatically
+- **MPP**: Use the `mppx` client library with a Tempo wallet
+- **x402**: Use `@x402/fetch` with a Base wallet holding USDC
 
 ## Endpoints
 
@@ -122,7 +123,7 @@ Returns nearest bus stops with real-time arrival predictions from MTA SIRI feeds
    - Taking the bus → `/bus/nearest`
    - Comparing options → call multiple endpoints
 
-3. **Call the API**: Make the request with lat/lng coordinates. Payment is handled automatically via MPP.
+3. **Call the API**: Make the request with lat/lng coordinates. Payment is handled automatically via MPP or x402.
 
 4. **Present results**: Format the response for the user:
    - Show walking times prominently ("1 min walk")
@@ -139,7 +140,7 @@ Returns nearest bus stops with real-time arrival predictions from MTA SIRI feeds
 - **Handle multi-modal questions** — if the user asks "should I bike or take the subway?", call both endpoints and compare
 - **Explain availability** — if no bikes/docks are available, mention it clearly
 - **Show next few arrivals** — for subway/bus, present the next 2-3 options so users can plan
-- **USDC wallet required** — if payment fails, tell the user to run `npx agentcash onboard`
+- **USDC wallet required** — if payment fails, tell the user to run `npx agentcash onboard` (supports both MPP and x402)
 
 ## Example prompts
 
@@ -158,3 +159,5 @@ Users might say:
 - GitHub: https://github.com/mmurrs/findmea
 - AgentCash: https://agentcash.dev
 - MPP: https://mpp.dev
+- x402: https://x402.org
+- x402 Discovery: https://findmea-nyc.vercel.app/.well-known/x402

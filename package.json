@@ -1,7 +1,7 @@
 {
   "name": "findmea",
   "version": "2.0.0",
-  "description": "FindMeA — Real-time NYC transit for agents. Citi Bike, Subway, Bus — $0.01 per lookup via MPP.",
+  "description": "FindMeA — Real-time NYC transit for agents. Citi Bike, Subway, Bus — $0.02 per check via MPP + x402.",
   "main": "server.js",
   "type": "module",
   "scripts": {
