@@ -79,7 +79,7 @@
     .hero .pricing-row {
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: 0.75rem;
       margin-bottom: 1.25rem;
     }
     .hero .price-tag {
@@ -88,6 +88,20 @@
       font-weight: 700;
       color: #111;
     }
+    .verify-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.6875rem;
+      font-weight: 500;
+      color: #888;
+      text-decoration: none;
+      padding: 0.25rem 0.5rem 0.25rem 0.4rem;
+      border: 1px solid #e5e7eb;
+      border-radius: 5px;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .verify-badge:hover { color: #555; border-color: #ccc; }
     .hero .volume {
       font-size: 0.8125rem;
       color: #999;
@@ -135,17 +149,26 @@
       display: flex;
       align-items: center;
       gap: 0.625rem;
+      cursor: pointer;
+      user-select: none;
+      transition: opacity 0.15s;
+      padding: 0.25rem 0;
     }
+    .coverage-stat:hover { opacity: 0.75; }
+    .coverage-stat.off .stat-dot { background: #ccc !important; }
+    .coverage-stat.off .stat-text { color: #bbb; text-decoration: line-through; }
     .stat-dot {
       width: 10px;
       height: 10px;
       border-radius: 50%;
       flex-shrink: 0;
+      transition: background 0.15s;
     }
     .stat-text {
       font-size: 0.875rem;
       color: #555;
       font-weight: 500;
+      transition: color 0.15s;
     }
     .map-wrap {
       position: relative;
@@ -527,6 +550,10 @@
       <p class="tagline">Three transit modes, one API. Citi Bike stations, subway arrivals, and bus predictions in real time.</p>
       <div class="pricing-row">
         <span class="price-tag">$0.02 per check</span>
+        <a href="https://verify-sepolia.eigencloud.xyz/app/0xc4eb6dD8aF1dEF5D6daa1320261fE9A1A447C4e5" class="verify-badge" target="_blank" rel="noopener">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M8 1L2 4v4c0 3.5 2.5 6.5 6 7.5 3.5-1 6-4 6-7.5V4L8 1z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M5.5 8.5L7 10l3.5-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Runs on EigenCloud
+        </a>
       </div>
     </div>
   </section>
@@ -555,15 +582,15 @@
             </a>
           </div>
           <ul class="coverage-stats" style="margin-top: 0.75rem;">
-            <li class="coverage-stat">
+            <li class="coverage-stat" data-layer="bike" onclick="toggleMapLayer(this)">
               <span class="stat-dot" style="background: #0073CE;"></span>
               <span class="stat-text">2,400+ CitiBike stations</span>
             </li>
-            <li class="coverage-stat">
+            <li class="coverage-stat" data-layer="subway" onclick="toggleMapLayer(this)">
               <span class="stat-dot" style="background: #FF6319;"></span>
               <span class="stat-text">496 subway stations</span>
             </li>
-            <li class="coverage-stat">
+            <li class="coverage-stat" data-layer="bus" onclick="toggleMapLayer(this)">
               <span class="stat-dot" style="background: #00ADD0;"></span>
               <span class="stat-text">2,229 bus stops</span>
             </li>
@@ -863,6 +890,15 @@ Mppx.create({ methods: [tempo({ account: tempoWallet })] })</code>
     });
   </script>
   <script>
+    function toggleMapLayer(el) {
+      const layer = el.dataset.layer;
+      el.classList.toggle('off');
+      const iframe = document.querySelector('.map-preview');
+      if (iframe && iframe.contentWindow) {
+        iframe.contentWindow.postMessage({ type: 'toggleLayer', layer: layer }, '*');
+      }
+    }
+
     function copyPrompt(btn) {
       const text = btn.parentElement.querySelector('.prompt-text').textContent;
       navigator.clipboard.writeText(text).then(() => {

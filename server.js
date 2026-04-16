@@ -11,6 +11,9 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 8080;
 
+// Trust proxy headers (X-Forwarded-Proto, X-Forwarded-Host) behind ecloud/load balancers
+app.set("trust proxy", true);
+
 // CORS — expose both MPP and x402 payment headers
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");

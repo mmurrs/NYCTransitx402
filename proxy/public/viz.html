@@ -283,6 +283,21 @@
       }
       redrawAll();
     }
+
+    // Listen for toggle messages from parent (embedded iframe)
+    window.addEventListener('message', function(e) {
+      if (e.data && e.data.type === 'toggleLayer' && e.data.layer) {
+        const name = e.data.layer;
+        layerActive[name] = !layerActive[name];
+        // Also sync the panel toggle if visible
+        const el = document.querySelector('[data-layer="' + name + '"]');
+        if (el) {
+          el.classList.toggle('on', layerActive[name]);
+          el.classList.toggle('off', !layerActive[name]);
+        }
+        redrawAll();
+      }
+    });
   </script>
 </body>
 </html>

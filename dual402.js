@@ -75,7 +75,8 @@ export function createDual402(config) {
           if (x402Sig) {
             const verified = await x402Verify(
               x402Sig,
-              config.x402.facilitatorUrl
+              config.x402.facilitatorUrl,
+              { amount: amountRaw, payTo: config.x402.payTo }
             );
             if (verified.valid) {
               // Settle async — don't block the response
@@ -108,7 +109,9 @@ export function createDual402(config) {
           // This way mppx handles both MPP credentials and challenge
           // generation, and we just layer x402 on top of the 402.
 
-          const resourceUrl = `${req.protocol}://${req.hostname}${req.originalUrl}`;
+          const baseUrl =
+            process.env.BASE_URL || `${req.protocol}://${req.get("host")}`;
+          const resourceUrl = `${baseUrl}${req.originalUrl}`;
           const paymentRequired = {
             x402Version: 2,
             accepts: [
@@ -159,11 +162,37 @@ export function createDual402(config) {
 
 // ── x402 facilitator HTTP calls ─────────────────────────────────────────
 
-async function x402Verify(paymentSignature, facilitatorUrl) {
+async function x402Verify(paymentSignature, facilitatorUrl, expected) {
   try {
     const payload = JSON.parse(
       Buffer.from(paymentSignature, "base64").toString("utf-8")
     );
+
+    // Validate amount and payee before even hitting the facilitator
+    if (expected) {
+      const paymentAmount = payload.amount ?? payload.value;
+      if (
+        paymentAmount !== undefined &&
+        expected.amount !== undefined &&
+        String(paymentAmount) !== String(expected.amount)
+      ) {
+        console.warn(
+          `[dual402] x402 amount mismatch: got ${paymentAmount}, expected ${expected.amount}`
+        );
+        return { valid: false, reason: "amount_mismatch" };
+      }
+      const paymentPayee = (payload.payTo ?? payload.to ?? "").toLowerCase();
+      if (
+        paymentPayee &&
+        expected.payTo &&
+        paymentPayee !== expected.payTo.toLowerCase()
+      ) {
+        console.warn(
+          `[dual402] x402 payee mismatch: got ${paymentPayee}, expected ${expected.payTo}`
+        );
+        return { valid: false, reason: "payee_mismatch" };
+      }
+    }
 
     const res = await fetch(`${facilitatorUrl}/verify`, {
       method: "POST",
@@ -229,7 +258,7 @@ export function dualDiscovery(app, dual, config) {
 
   // x402 discovery (resource list)
   app.get("/.well-known/x402", (req, res) => {
-    const base = `${req.protocol}://${req.hostname}`;
+    const base = process.env.BASE_URL || `${req.protocol}://${req.get("host")}`;
     res.json({
       version: 2,
       resources: config.routes.map((r) => ({
