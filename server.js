@@ -199,6 +199,12 @@ function validateLookupQuery(req, res, next) {
   next();
 }
 
+function paymentProtocol(req) {
+  if (req.headers["payment-signature"] || req.headers["x-payment"]) return "x402";
+  if (req.headers["authorization"]?.startsWith("Payment ")) return "mpp";
+  return "unknown";
+}
+
 // --- Citi Bike (GBFS) ---
 
 const STATION_INFO_URL =
@@ -213,6 +219,7 @@ async function fetchGBFS() {
   if (Date.now() - gbfsCache.ts < GBFS_TTL && gbfsCache.stations)
     return gbfsCache;
 
+  const t0 = Date.now();
   const [infoRes, statusRes] = await Promise.all([
     fetch(STATION_INFO_URL),
     fetch(STATION_STATUS_URL),
@@ -226,6 +233,7 @@ async function fetchGBFS() {
   }
 
   gbfsCache = { stations: info.data.stations, statusMap, ts: Date.now() };
+  console.log(`[GBFS] refresh stations=${info.data.stations.length} fetch_ms=${Date.now() - t0}`);
   return gbfsCache;
 }
 
@@ -265,9 +273,10 @@ app.get(
         .sort((a, b) => a.distance_feet - b.distance_feet)
         .slice(0, limit);
 
+      console.log(`[REQ] /citibike/nearest protocol=${paymentProtocol(req)} results=${results.length} cache_age_s=${Math.round((Date.now() - gbfsCache.ts) / 1000)}`);
       res.json({ results });
     } catch (err) {
-      console.error("GBFS fetch error:", err);
+      console.error("[GBFS] error:", err.message);
       res.status(502).json({ error: "Failed to fetch station data" });
     }
   },
@@ -308,9 +317,10 @@ app.get(
         .sort((a, b) => a.distance_feet - b.distance_feet)
         .slice(0, limit);
 
+      console.log(`[REQ] /citibike/dock protocol=${paymentProtocol(req)} results=${results.length} cache_age_s=${Math.round((Date.now() - gbfsCache.ts) / 1000)}`);
       res.json({ results });
     } catch (err) {
-      console.error("GBFS fetch error:", err);
+      console.error("[GBFS] error:", err.message);
       res.status(502).json({ error: "Failed to fetch station data" });
     }
   },
@@ -350,6 +360,7 @@ async function fetchFeed(feedId) {
   const cached = feedCache.get(feedId);
   if (cached && Date.now() - cached.ts < FEED_TTL) return cached.feed;
 
+  const t0 = Date.now();
   const res = await fetch(FEED_URLS[feedId]);
   const buf = await res.arrayBuffer();
   const feed =
@@ -358,6 +369,7 @@ async function fetchFeed(feedId) {
     );
 
   feedCache.set(feedId, { feed, ts: Date.now() });
+  console.log(`[GTFS] refresh feed=${feedId} entities=${feed.entity.length} fetch_ms=${Date.now() - t0}`);
   return feed;
 }
 
@@ -441,9 +453,11 @@ app.get(
         };
       });
 
+      const maxCacheAge = Math.max(...feedIds.map(id => Date.now() - (feedCache.get(id)?.ts ?? 0)));
+      console.log(`[REQ] /subway/nearest protocol=${paymentProtocol(req)} results=${results.length} feeds=${feedIds.length} max_cache_age_s=${Math.round(maxCacheAge / 1000)}`);
       res.json({ results });
     } catch (err) {
-      console.error("Subway fetch error:", err);
+      console.error("[GTFS] error:", err.message);
       res.status(502).json({ error: "Failed to fetch subway data" });
     }
   },
@@ -469,6 +483,7 @@ app.get(
   async (req, res) => {
 
     const { lat, lng, limit } = req.lookupQuery;
+    const t0 = Date.now();
     try {
       // Find nearby stops via OneBusAway
       const stopsUrl = `https://bustime.mta.info/api/where/stops-for-location.json?lat=${lat}&lon=${lng}&latSpan=0.005&lonSpan=0.005&key=${BUS_API_KEY}`;
@@ -516,9 +531,12 @@ app.get(
         }),
       );
 
+      const totalArrivals = results.reduce((sum, r) => sum + r.arrivals.length, 0);
+      console.log(`[BUS] fetch stops=${results.length} arrivals=${totalArrivals} fetch_ms=${Date.now() - t0}`);
+      console.log(`[REQ] /bus/nearest protocol=${paymentProtocol(req)} results=${results.length} arrivals=${totalArrivals}`);
       res.json({ results });
     } catch (err) {
-      console.error("Bus fetch error:", err);
+      console.error("[BUS] error:", err.message);
       res.status(502).json({ error: "Failed to fetch bus data" });
     }
   },
@@ -547,5 +565,5 @@ app.get("/", (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Real Time NYC Transit running on http://localhost:${PORT}`);
+  console.log(`[BOOT] FindMeA port=${PORT} x402=${dual._x402Config.network} mpp=${dual._mppx ? "configured" : "missing"} bus_key=${BUS_API_KEY ? "configured" : "missing"} stations=${subwayStations.length}`);
 });

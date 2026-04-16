@@ -79,10 +79,13 @@ export function createDual402(config) {
               { amount: amountRaw, payTo: config.x402.payTo }
             );
             if (verified.valid) {
+              console.log(`[PAY] x402 verified amount=${amount} network=${config.x402.network}${verified.txHash ? ` tx=${verified.txHash}` : ""}`);
               // Settle async — don't block the response
-              x402Settle(x402Sig, config.x402.facilitatorUrl).catch((err) =>
-                console.error("[dual402] x402 settle error:", err.message)
-              );
+              x402Settle(x402Sig, config.x402.facilitatorUrl)
+                .then(() => console.log(`[PAY] x402 settled amount=${amount}`))
+                .catch((err) =>
+                  console.error("[PAY] x402 settle error:", err.message)
+                );
               // Attach receipt header if we got a tx hash back
               if (verified.txHash) {
                 res.setHeader(
