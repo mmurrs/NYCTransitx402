@@ -1,0 +1,20 @@
+{
+  "name": "nyc-transit-live",
+  "version": "2.2.1",
+  "description": "NYC Transit Live — Real-time NYC transit for agents. Citi Bike, Subway, Bus — $0.02 per check via MPP + x402.",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node tests/dual402.smoke.mjs && node --test tests/invariants.test.mjs",
+    "test:offline": "node tests/dual402.smoke.mjs",
+    "test:invariants": "node --test tests/invariants.test.mjs",
+    "refresh-examples": "node scripts/refresh-examples.mjs"
+  },
+  "dependencies": {
+    "express": "^5.2.1",
+    "gtfs-realtime-bindings": "^1.1.1",
+    "mppx": "^0.4.11"
+  }
+}

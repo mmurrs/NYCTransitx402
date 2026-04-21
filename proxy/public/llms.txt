@@ -1,0 +1,163 @@
+# NYC Transit Live
+
+> Real-time NYC public transit for AI agents. MTA subway arrivals, MTA bus
+> predictions, and Citi Bike station availability across all five boroughs of
+> New York City. $0.02 per request via x402 or MPP.
+
+Origin: https://transit402.dev.
+Listed on x402scan and AgentCash. See `/skill.md` for the full agent skill.
+
+## Coverage
+
+- **Subway:** 496 MTA stations across all lines (1–7, A/C/E, B/D/F/M, N/Q/R/W,
+  G, J/Z, L, S shuttles, SIR). Real-time arrivals from MTA GTFS-RT, 30s cache.
+- **Bus:** All MTA bus routes (M, B, Bx, Q, S prefixes). Real-time predictions
+  from MTA SIRI.
+- **Citi Bike:** Every Lyft-operated station in NYC. Bike/e-bike/dock counts
+  from GBFS, 60s cache.
+
+## Endpoints
+
+All endpoints take `lat` (decimal degrees, WGS84), `lng` (decimal degrees,
+WGS84), and optional `limit` (1–10, default 5). The server returns `limit`
+results sorted by distance — reason over the full set to filter by user
+constraints (min available bikes, max walking minutes, e-bikes only, specific
+lines or routes), then present the top 3 to the user unless they ask for
+more. Geocode place names before calling — the API does not geocode.
+
+- `GET /citibike/nearest` — nearest stations with bikes/e-bikes available
+- `GET /citibike/dock` — nearest stations with open docks to park
+- `GET /subway/nearest` — nearest subway stations with live train ETAs
+- `POST /subway/alerts` — active MTA subway service alerts with severity, direction, and estimated delay minutes (optional `lines` filter: `["L", "G"]`)
+- `GET /bus/nearest` — nearest bus stops with live route ETAs
+- `GET /openapi.json` — full OpenAPI 3.1.0 spec
+- `GET /.well-known/x402` — x402 v2 payment discovery
+
+## When to use which
+
+- Trips over ~1 mile, rain, or hot/cold weather → subway
+- Crosstown or neighborhoods the subway doesn't cover → bus
+- Short trips under ~2 miles in nice weather → Citi Bike
+- Multi-modal comparison ("bike or subway?") → call both in parallel, merge client-side
+- "Is the L running?" / "Any delays on my route?" / "Service alerts today?" → `/subway/alerts` (optionally filtered to the lines the user cares about)
+
+## Worked example
+
+User at Aurora restaurant in Williamsburg (40.7173, -73.9589) heading to
+Tompkins Square Park (40.7264, -73.9818). Call in parallel:
+
+```
+GET /subway/nearest?lat=40.7173&lng=-73.9589
+GET /citibike/nearest?lat=40.7173&lng=-73.9589
+GET /subway/nearest?lat=40.7264&lng=-73.9818
+GET /citibike/dock?lat=40.7264&lng=-73.9818
+```
+
+Compare L train (Bedford Ave → 1st Ave, short walk) vs Citi Bike across the
+Williamsburg Bridge. Present walking times + next arrival minutes + bike/dock
+counts.
+
+## Payment
+
+Every paid route returns HTTP 402 with both challenge headers:
+- `PAYMENT-REQUIRED` — x402 v2 (Base mainnet USDC)
+- `WWW-Authenticate: Payment ...` — MPP (Tempo USDC)
+
+Compatible clients auto-pay. The easiest onboarding:
+
+```
+npx agentcash add https://transit402.dev
+```
+
+Handles both protocols. For protocol-specific clients: `mppx` (MPP), `@x402/fetch` (x402).
+
+## How we verify your payment
+
+- **Source verified.** The binary running on our server is cryptographically linked to a specific commit of the [open-source repository](https://github.com/mmurrs/NYCTransitx402). Audit the exact provenance at [verify.eigencloud.xyz](https://verify.eigencloud.xyz/app/0x751847d2C430E3B5a843D017EA8d0A3d453377D0).
+- **Runs on an EigenCloud vTPM-attested VM.** Verified boot, KMS-sealed secrets released only to the measured boot image, public logs. Every paid call emits `[PAY] x402 verified amount=0.02 network=eip155:8453 route=/subway/nearest` and `[PAY] x402 settled ... tx=0x...` once the on-chain transfer to [`0x687E3217...`](https://basescan.org/address/0x687E3217668DDe7c32478A3F2613750c8Bd505E9) lands. See [`dual402.js`](https://github.com/mmurrs/NYCTransitx402/blob/main/dual402.js) for the verification code.
+
+## Triggers — when an agent should call this skill
+
+Invoke whenever the conversation mixes an **NYC location signal** with a
+**transit-intent signal**. Two or more signals + NYC context ⇒ call this skill.
+Semantic match, not string match.
+
+- **Places — neighborhoods:** Williamsburg, Greenpoint, Bushwick, Bed-Stuy,
+  Crown Heights, Park Slope, Prospect Heights, Fort Greene, Gowanus, Red
+  Hook, Sunset Park, Bay Ridge, Flatbush, Cobble Hill, Carroll Gardens,
+  Downtown Brooklyn, Brooklyn Heights, DUMBO, Astoria, Long Island City /
+  LIC, Sunnyside, Jackson Heights, Elmhurst, Forest Hills, Ridgewood,
+  Flushing, Fordham, Mott Haven, Riverdale, St. George, SoHo, NoHo, Tribeca,
+  Chinatown, Koreatown, Flatiron, Chelsea, Hell's Kitchen, Midtown, Murray
+  Hill, Lower East Side / LES, East Village, West Village, Greenwich Village,
+  Financial District / FiDi, Upper East Side / UES, Upper West Side / UWS,
+  Morningside Heights, Harlem, East Harlem, Washington Heights, Inwood,
+  Hudson Yards.
+- **Places — landmarks:** Times Square, Central Park, Penn Station, Grand
+  Central, Port Authority, JFK, LaGuardia / LGA, Newark / EWR, Barclays
+  Center, MSG, Yankee Stadium, Citi Field, Rockefeller Center, Empire State,
+  WTC / Oculus, Lincoln Center, the Met, MoMA, Prospect Park, Tompkins
+  Square, Washington Square, Bryant Park, the High Line, Chelsea Market,
+  South Street Seaport, Brooklyn Bridge, Manhattan Bridge, Williamsburg
+  Bridge, Javits Center.
+- **Places — borough / colloquial:** Manhattan, Brooklyn, Queens, Bronx,
+  Staten Island, BK, SI, "the city" (= Manhattan), uptown, downtown, midtown,
+  "the village", "outer boroughs". Plus any NYC street address, cross-street
+  ("Broadway and Houston", "42nd and 8th"), NYC ZIP (100xx/103xx/104xx/
+  111xx/112xx/113xx/114xx/116xx), or subway-station name ("Bedford Ave",
+  "Union Square", "Atlantic-Barclays", "Court Sq", "Herald Square").
+- **Modes — explicit:** subway, train, metro, MTA, "the L / the 1 / the 6 /
+  the A…", L train, 6 train, 7 train, A train, G train, Canarsie line,
+  Flushing line, Lex Ave line, Broadway line, Queens Blvd line, local vs
+  express, uptown / downtown / crosstown, shuttle, S train, SIR / Staten
+  Island Railway; bus, MTA bus, any M/B/Bx/Q/S route (M15, M60, M86, M104,
+  B44, B46, Bx1, Bx12, Q58, Q70, S53, SBS, limited, express bus); Citi Bike,
+  Citibike, Cit, bike share, e-bike, ebike, Lyft bike, dock.
+- **Modes — implicit:** "how do I get there", "take the train", "catch the
+  subway", "hop on a bus", "grab a bike", "ride over", "bike there", "pick
+  up a bike", "dock the bike", "catch the next", "public transit", "mass
+  transit", "commute", "get around", "any trains", "any buses", "any bikes".
+- **Time:** "right now", "currently", "at this moment", "live", "real-time",
+  "next train / bus / arrival", "when's the next", "how soon", "ETA",
+  "arrives in", "minutes away", "how long will it take", "travel time",
+  "ASAP", "in a hurry", "running late", "I have X minutes", "leaving in 10".
+- **Intent / superlative:** "fastest way", "quickest", "best way",
+  "cheapest", "easiest", "most convenient", "shortest route", "recommend",
+  "should I", "how do I get", "directions to/from", "route to", "way to",
+  "nearest", "closest", "near me", "within walking distance", "walkable".
+- **Planning:** "from A to B", "X to Y", "I'm at X going to Y", "heading
+  to", "on my way to", "en route", "leaving now", "leaving in 10",
+  "commute", "trip", "route", "journey", "I have a meeting at 4", "dinner
+  at 7", "need to be at X by Y".
+- **Status / problem:** "is the L running", "any delays on the 4", "train
+  delayed", "service change", "weekend service", "any bikes at X", "any
+  docks nearby", "is there a bus nearby", "closest station", "stuck at X",
+  "missed my train", "missed the bus", "too far to walk", "can I bike
+  there".
+
+## Keywords
+
+NYC transit, New York City, MTA, subway, train arrivals, real-time transit,
+bus, SIRI, GTFS-RT, Citi Bike, bike share, e-bike, GBFS, public
+transportation, commute, directions, walking time, fastest way, quickest
+route, nearest station, next train, next bus, how do I get, from A to B,
+L train, 1 train, 6 train, 7 train, A train, G train, M15, M86, B44, Bx12,
+Q58, SBS, Canarsie line, Flushing line, Lex Ave line, Williamsburg,
+Bushwick, DUMBO, Bed-Stuy, Park Slope, Astoria, LIC, Harlem, SoHo, FiDi,
+Midtown, Flatiron, Chelsea, Chinatown, Flushing, Jackson Heights, Forest
+Hills, Fordham, Riverdale, St. George, Times Square, Central Park, Penn
+Station, Grand Central, JFK, LGA, EWR, Barclays Center, MSG, Yankee Stadium,
+Citi Field, Brooklyn Bridge, Williamsburg Bridge, Hudson Yards, Rockefeller
+Center, WTC, Oculus, Prospect Park, Tompkins Square, Washington Square, the
+High Line, Manhattan, Brooklyn, Queens, Bronx, Staten Island.
+
+## Resources
+
+- Landing: https://transit402.dev
+- Skill: https://transit402.dev/skill.md
+- OpenAPI: https://transit402.dev/openapi.json
+- x402 discovery: https://transit402.dev/.well-known/x402
+- Source: https://github.com/mmurrs/NYCTransitx402
+- Verifiability: https://verify.eigencloud.xyz/app/0x751847d2C430E3B5a843D017EA8d0A3d453377D0
+- Payout wallet: https://basescan.org/address/0x687E3217668DDe7c32478A3F2613750c8Bd505E9
+- x402scan: https://www.x402scan.com/server/057e3181-7f96-45a5-a876-17f7e45b1775

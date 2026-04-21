@@ -1,0 +1,1856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NYC Transit Live — real-time NYC transit API</title>
+  <meta name="description" content="Real-time NYC transit for agents. Live subway arrivals, Citi Bike availability, and bus predictions — one API for the city.">
+  <meta property="og:site_name" content="NYC Transit Live">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="NYC Transit Live — real-time NYC transit API">
+  <meta property="og:description" content="Real-time NYC transit for agents. Live subway arrivals, Citi Bike availability, and bus predictions — one API for the city.">
+  <meta property="og:image" content="https://transit402.dev/og.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:url" content="https://transit402.dev">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="NYC Transit Live — real-time NYC transit API">
+  <meta name="twitter:description" content="Real-time NYC transit for agents. Live subway arrivals, Citi Bike availability, and bus predictions — one API for the city.">
+  <meta name="twitter:image" content="https://transit402.dev/og.png">
+  <meta name="theme-color" content="#0a0a0a">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: #111;
+      background: #fafbfc;
+      line-height: 1.6;
+      font-size: 0.9375rem;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+    }
+
+    nav {
+      background: #fff;
+      border-bottom: 1px solid #e5e7eb;
+      height: 3.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    nav .logo {
+      font-weight: 700;
+      font-size: 0.875rem;
+      letter-spacing: -0.02em;
+      text-decoration: none;
+      color: #111;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    nav .links { display: flex; gap: 1.25rem; align-items: center; }
+    nav .links a { font-size: 0.75rem; color: #888; text-decoration: none; font-weight: 500; }
+    nav .links a:hover { color: #111; }
+
+    .container { max-width: 720px; margin: 0 auto; padding: 0 1.5rem; }
+
+    .hero {
+      background: #fff;
+      border-bottom: 1px solid #e5e7eb;
+      padding: 3.5rem 0 3rem;
+    }
+    .hero .container { position: relative; }
+    .hero h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 0.75rem;
+      line-height: 1.15;
+    }
+    .hero .tagline {
+      font-size: 1rem;
+      color: #555;
+      max-width: 560px;
+      margin-bottom: 1.5rem;
+      line-height: 1.5;
+    }
+    .hero .pricing-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+    .hero-ctas {
+      display: flex;
+      gap: 0.625rem;
+      align-items: center;
+      margin-bottom: 1.25rem;
+      flex-wrap: wrap;
+    }
+    .hero-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.375rem;
+      padding: 0.5rem 0.875rem;
+      border-radius: 6px;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.1s;
+    }
+    .hero-cta.primary {
+      background: #111;
+      color: #fff;
+      border: 1px solid #111;
+    }
+    .hero-cta.primary:hover { background: #000; transform: translateY(-1px); }
+    .hero-cta.secondary {
+      background: #fff;
+      color: #333;
+      border: 1px solid #e5e7eb;
+    }
+    .hero-cta.secondary:hover { border-color: #cbd5e1; color: #111; }
+    .hero .price-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.125rem;
+      font-weight: 700;
+      color: #111;
+    }
+    .eigen-badge {
+      position: absolute;
+      bottom: 0;
+      right: 1.5rem;
+      display: inline-flex;
+      align-items: flex-start;
+      gap: 0.375rem;
+      text-decoration: none;
+      padding: 0.35rem 0.5rem 0.35rem 0.4rem;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      background: #fff;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .eigen-badge:hover {
+      border-color: #c7d2de;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .eigen-badge svg { flex-shrink: 0; margin-top: 1px; }
+    .eigen-badge-text {
+      display: flex;
+      flex-direction: column;
+    }
+    .eigen-badge-title {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      color: #333;
+      line-height: 1.3;
+    }
+    .eigen-badge-sub {
+      font-size: 0.5625rem;
+      font-weight: 500;
+      color: #aaa;
+      line-height: 1.3;
+    }
+    .hero .volume {
+      font-size: 0.8125rem;
+      color: #999;
+      font-weight: 500;
+    }
+
+    .section-label {
+      font-size: 0.6875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #999;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+
+    /* Explorer stats band */
+    .explorer-stats {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.875rem 1.5rem;
+      padding: 0.75rem 1rem;
+      margin: 0.5rem 0 1rem;
+      background: #fafbfc;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+    }
+    .explorer-stat {
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+      font-size: 0.8125rem;
+      color: #555;
+      white-space: nowrap;
+    }
+    .explorer-stat b {
+      font-size: 1.125rem;
+      font-weight: 700;
+      color: #111;
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: -0.01em;
+    }
+    .explorer-stat-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      align-self: center;
+    }
+    .explorer-stat-label { font-weight: 500; }
+    .explorer-stat-sub {
+      margin-left: auto;
+      font-size: 0.6875rem;
+      color: #888;
+      font-weight: 500;
+    }
+    @media (max-width: 640px) {
+      .explorer-stat-sub { margin-left: 0; flex-basis: 100%; }
+    }
+
+    /* Get started */
+    .get-started {
+      padding: 2.5rem 0;
+      border-top: 1px solid #e5e7eb;
+      background: #fff;
+    }
+    .get-started .container { max-width: 720px; }
+
+    .wallet-tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .wallet-tab {
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: #888;
+      background: none;
+      border: none;
+      padding: 0.625rem 1rem;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s ease;
+    }
+    .wallet-tab:hover { color: #111; }
+    .wallet-tab.active {
+      color: #111;
+      border-bottom-color: #111;
+    }
+
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+
+    .steps {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+    .step {
+      display: flex;
+      gap: 1rem;
+    }
+    .step-number {
+      flex-shrink: 0;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #111;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+    .step-content h3 {
+      font-size: 0.875rem;
+      font-weight: 700;
+      margin-bottom: 0.375rem;
+      color: #111;
+    }
+    .step-content p {
+      font-size: 0.8125rem;
+      color: #666;
+      margin-bottom: 0.5rem;
+      line-height: 1.5;
+    }
+    .step-content code {
+      display: block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8125rem;
+      background: #fafbfc;
+      border: 1px solid #e5e7eb;
+      padding: 0.625rem 0.875rem;
+      border-radius: 6px;
+      color: #333;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    .code-block {
+      position: relative;
+      margin-bottom: 0.5rem;
+      display: inline-block;
+      max-width: 100%;
+    }
+    .code-block code {
+      padding-right: 2.5rem;
+      margin-bottom: 0;
+    }
+    .code-copy-btn {
+      position: absolute;
+      top: 0.375rem;
+      right: 0.375rem;
+      background: transparent;
+      border: 1px solid transparent;
+      padding: 0.3rem;
+      border-radius: 4px;
+      color: #888;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+    .code-copy-btn:hover {
+      background: #fff;
+      border-color: #e5e7eb;
+      color: #111;
+    }
+    .code-copy-btn.copied {
+      color: #10b981;
+    }
+    .code-copy-btn svg {
+      display: block;
+    }
+
+    .setup-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.6875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #999;
+      margin-bottom: 0.375rem;
+    }
+
+    /* Services (endpoints) */
+    .services {
+      padding: 2.5rem 0;
+      border-top: 1px solid #e5e7eb;
+    }
+    .services-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.75rem;
+    }
+    .service-card {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 1.25rem;
+      position: relative;
+    }
+    .service-header {
+      display: flex;
+      align-items: center;
+      gap: 0.625rem;
+      margin-bottom: 0.875rem;
+    }
+    .service-icon {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .service-title {
+      font-size: 0.9375rem;
+      font-weight: 700;
+      color: #111;
+    }
+    .service-price {
+      margin-left: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      color: #fff;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+    }
+    .service-endpoints {
+      display: flex;
+      flex-direction: column;
+      gap: 0.375rem;
+      margin-bottom: 0.75rem;
+    }
+    .endpoint-path {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      color: #555;
+      background: #fafbfc;
+      padding: 0.375rem 0.5rem;
+      border-radius: 4px;
+      border: 1px solid #f0f0f0;
+    }
+    .service-meta {
+      font-size: 0.75rem;
+      color: #888;
+      line-height: 1.5;
+    }
+    .subway-lines {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.25rem;
+      margin-top: 0.625rem;
+    }
+    .subway-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      font-size: 0.625rem;
+      font-weight: 700;
+      font-family: 'Inter', sans-serif;
+      color: #fff;
+      line-height: 1;
+    }
+
+
+    /* Example responses */
+    .examples {
+      padding: 2.5rem 0;
+      border-top: 1px solid #e5e7eb;
+    }
+    .example-block {
+      margin-bottom: 1.5rem;
+    }
+    .example-block:last-child { margin-bottom: 0; }
+    .example-label {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      color: #999;
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      display: flex;
+      align-items: center;
+      gap: 0.375rem;
+    }
+    pre {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      padding: 1rem 1.25rem;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-size: 0.75rem;
+      font-family: 'JetBrains Mono', monospace;
+      line-height: 1.6;
+      color: #333;
+    }
+
+    /* Resources */
+    .resources {
+      padding: 2.5rem 0;
+      border-top: 1px solid #e5e7eb;
+      background: #fff;
+    }
+    .resource-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+    .resource-link {
+      display: block;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: #111;
+      text-decoration: none;
+      padding: 0.875rem 1rem;
+      background: #fafbfc;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .resource-link:hover { border-color: #111; }
+    .resource-label {
+      font-size: 0.6875rem;
+      color: #888;
+      display: block;
+      margin-bottom: 0.25rem;
+      font-family: 'Inter', sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+
+    /* Transparency */
+    .transparency {
+      padding: 2.5rem 0;
+      border-top: 1px solid #e5e7eb;
+      background: #fafbfc;
+    }
+    .transparency h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #111;
+      margin: 0.25rem 0 0.875rem;
+    }
+    .transparency p {
+      font-size: 0.8125rem;
+      color: #555;
+      line-height: 1.65;
+      max-width: 56rem;
+      margin-bottom: 0.875rem;
+    }
+    .transparency p strong { color: #111; font-weight: 600; }
+    .transparency p code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      padding: 0.1rem 0.3rem;
+      border-radius: 3px;
+      color: #333;
+    }
+    .transparency p a {
+      color: #1a73e8;
+      text-decoration: none;
+    }
+    .transparency p a:hover { text-decoration: underline; }
+    .transparency-cta {
+      display: inline-block;
+      margin-top: 0.25rem;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: #111;
+      text-decoration: none;
+      padding: 0.625rem 1rem;
+      background: #fff;
+      border: 1px solid #111;
+      border-radius: 6px;
+      transition: background 0.15s, color 0.15s;
+    }
+    .transparency-cta:hover { background: #111; color: #fff; }
+    .transparency-sublink {
+      display: inline-block;
+      margin-top: 0.625rem;
+      margin-left: 0.875rem;
+      font-size: 0.75rem;
+      color: #888;
+      text-decoration: none;
+    }
+    .transparency-sublink:hover { color: #111; text-decoration: underline; }
+
+    footer {
+      border-top: 1px solid #e5e7eb;
+      padding: 2rem 0;
+      background: #fff;
+    }
+    footer .footer-inner {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    footer .footer-links { display: flex; gap: 1.25rem; flex-wrap: wrap; }
+    footer a { font-size: 0.75rem; color: #888; text-decoration: none; }
+    footer a:hover { color: #111; }
+    footer .footer-note {
+      font-size: 0.6875rem;
+      color: #bbb;
+      font-style: italic;
+    }
+
+    @media (max-width: 640px) {
+      nav { padding: 0 1rem; }
+      nav .links { gap: 0.875rem; }
+      nav .links a { font-size: 0.6875rem; }
+      .hero h1 { font-size: 1.5rem; }
+      .eigen-badge { position: static; margin-top: 1rem; }
+      .wallet-tabs { flex-wrap: wrap; }
+      .wallet-tab { font-size: 0.75rem; padding: 0.5rem 0.75rem; }
+      .resource-grid { grid-template-columns: 1fr; }
+      footer .footer-inner { flex-direction: column; align-items: flex-start; }
+    }
+
+    /* Explorer widget */
+    .explorer {
+      padding: 2.5rem 0 3rem;
+      border-top: 1px solid #e5e7eb;
+      background: #fff;
+    }
+    .explorer .container { max-width: 1080px; }
+    .explorer-headline {
+      font-size: 1.375rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.375rem;
+      line-height: 1.25;
+    }
+    .explorer-sub {
+      font-size: 0.875rem;
+      color: #666;
+      margin-bottom: 1.5rem;
+      max-width: 640px;
+    }
+    .explorer-layout {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      gap: 1rem;
+      align-items: start;
+    }
+    .explorer-prompts {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .explorer-prompt {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 0.75rem 0.875rem;
+      cursor: pointer;
+      text-align: left;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      width: 100%;
+      font-family: inherit;
+      font-style: normal;
+      display: block;
+    }
+    .explorer-prompt::before, .explorer-prompt::after { content: none; }
+    .explorer-prompt:hover {
+      border-color: #cbd5e1;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .explorer-prompt.active {
+      border-color: #111;
+      box-shadow: 0 0 0 3px rgba(17,17,17,0.05);
+    }
+    .explorer-prompt-kind {
+      font-size: 0.625rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 0.35rem;
+      display: inline-block;
+      padding: 0.125rem 0.375rem;
+      border-radius: 3px;
+    }
+    .explorer-prompt-kind.multimodal { background: #ede9fe; color: #6b21a8; }
+    .explorer-prompt-kind.bike { background: #dbeafe; color: #0369a1; }
+    .explorer-prompt-kind.dock { background: #dbeafe; color: #0369a1; }
+    .explorer-prompt-kind.subway { background: #ffedd5; color: #9a3412; }
+    .explorer-prompt-kind.bus { background: #cffafe; color: #0e7490; }
+    .explorer-prompt-body {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+    .explorer-prompt-title {
+      flex: 1;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      color: #111;
+      line-height: 1.4;
+      font-style: italic;
+      word-break: break-word;
+    }
+    .explorer-prompt-title::before { content: "\201C"; color: #bbb; margin-right: 1px; }
+    .explorer-prompt-title::after { content: "\201D"; color: #bbb; margin-left: 1px; }
+    .explorer-prompt-copy {
+      flex-shrink: 0;
+      width: 22px;
+      height: 22px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      border: none;
+      background: none;
+      color: #c0c7d1;
+      cursor: pointer;
+      transition: color 0.15s, background 0.15s;
+      padding: 0;
+    }
+    .explorer-prompt-copy:hover { color: #444; background: #f1f5f9; }
+    .explorer-prompt-copy.copied { color: #059669; }
+    .explorer-prompt-sub {
+      font-size: 0.6875rem;
+      color: #888;
+      line-height: 1.4;
+      margin-top: 0.375rem;
+    }
+
+    .explorer-panel {
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      overflow: hidden;
+      background: #fff;
+    }
+    #explorer-map {
+      height: 320px;
+      width: 100%;
+      background: #f3f4f6;
+    }
+    .explorer-response {
+      padding: 1rem 1.125rem 1.125rem;
+      border-top: 1px solid #e5e7eb;
+      min-height: 440px;
+      max-height: 640px;
+      overflow-y: auto;
+    }
+    .explorer-empty {
+      color: #999;
+      font-size: 0.8125rem;
+      padding: 2rem 0;
+      text-align: center;
+    }
+    .response-group-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 0.75rem;
+      margin-bottom: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .response-maps-link {
+      font-size: 0.6875rem;
+      color: #666;
+      text-decoration: none;
+      font-weight: 500;
+      padding: 0.1875rem 0.5rem;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      white-space: nowrap;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .response-maps-link:hover { color: #111; border-color: #cbd5e1; }
+    .response-meta {
+      font-size: 0.6875rem;
+      color: #999;
+      font-family: 'JetBrains Mono', monospace;
+      margin-bottom: 0.75rem;
+    }
+    .response-group + .response-group {
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px dashed #e5e7eb;
+    }
+    .response-group-label {
+      font-size: 0.625rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #888;
+      margin-bottom: 0.5rem;
+    }
+    .response-card {
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      padding: 0.625rem 0.75rem;
+      margin-bottom: 0.375rem;
+      background: #fafbfc;
+    }
+    .response-card:last-child { margin-bottom: 0; }
+    .response-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 0.5rem;
+    }
+    .response-name {
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: #111;
+      line-height: 1.3;
+      word-break: break-word;
+      min-width: 0;
+      flex: 1;
+    }
+    .response-walk {
+      font-size: 0.6875rem;
+      color: #666;
+      font-family: 'JetBrains Mono', monospace;
+      white-space: nowrap;
+    }
+    .response-chips {
+      margin-top: 0.375rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.25rem;
+    }
+    .chip {
+      font-size: 0.6875rem;
+      padding: 0.125rem 0.375rem;
+      border-radius: 10px;
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      color: #333;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .chip.subway {
+      color: #fff;
+      font-weight: 600;
+      border: none;
+      min-width: 1.25rem;
+      text-align: center;
+      padding: 0.125rem 0.375rem;
+    }
+    .chip.bike { background: rgba(0,115,206,0.1); color: #0073CE; border-color: rgba(0,115,206,0.25); }
+    .chip.ebike { background: rgba(0,115,206,0.15); color: #0073CE; border-color: rgba(0,115,206,0.3); font-weight: 600; }
+    .chip.dock { background: rgba(0,173,208,0.1); color: #006280; border-color: rgba(0,173,208,0.25); }
+    .chip.route { background: #111; color: #fff; border: none; font-weight: 600; font-size: 0.625rem; }
+    .chip.severity { font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; font-size: 0.625rem; }
+    .chip.severity.no_service { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+    .chip.severity.reduced { background: #fef3c7; color: #92400e; border-color: #fcd34d; }
+    .chip.severity.delays { background: #fef3c7; color: #92400e; border-color: #fcd34d; }
+    .chip.severity.detour { background: #e0e7ff; color: #3730a3; border-color: #a5b4fc; }
+    .chip.severity.info { background: #f3f4f6; color: #555; border-color: #d1d5db; }
+    .alert-desc { font-family: 'Inter', sans-serif !important; font-size: 0.75rem !important; line-height: 1.5; color: #555; white-space: normal; }
+    .arrival {
+      font-size: 0.6875rem;
+      color: #555;
+      font-family: 'JetBrains Mono', monospace;
+      margin-top: 0.25rem;
+    }
+    .arrival-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.25rem;
+    }
+    .arrival-row:last-child { margin-bottom: 0; }
+    .arrival-direction {
+      font-weight: 500;
+      color: #555;
+      min-width: 4.75rem;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.6875rem;
+    }
+    .arrival-times {
+      color: #333;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .response-raw {
+      margin-top: 0.5rem;
+      background: #0f172a;
+      border-radius: 6px;
+      padding: 0.625rem 0.75rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.6875rem;
+      line-height: 1.5;
+      color: #cbd5e1;
+      overflow: auto;
+      white-space: pre;
+      max-height: 260px;
+      -webkit-font-smoothing: antialiased;
+    }
+    .response-raw .req-line {
+      color: #94a3b8;
+      display: block;
+      margin-bottom: 0.35rem;
+    }
+    .response-raw .req-verb { color: #7dd3fc; font-weight: 600; }
+    .response-raw .req-path { color: #e2e8f0; }
+    .response-raw .k { color: #93c5fd; }
+    .response-raw .s { color: #a7f3d0; }
+    .response-raw .n { color: #fbbf24; }
+    .response-raw .b { color: #f9a8d4; }
+    .explorer-footnote {
+      margin-top: 1.25rem;
+      font-size: 0.6875rem;
+      color: #999;
+      text-align: center;
+    }
+    .explorer-footnote code {
+      font-family: 'JetBrains Mono', monospace;
+      background: #f4f4f5;
+      padding: 0.125rem 0.375rem;
+      border-radius: 3px;
+      color: #444;
+    }
+    .explorer-footnote a { color: #555; }
+
+    /* Leaflet marker overrides */
+    .leaflet-container { font-family: inherit; }
+    .marker-pin {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.6875rem;
+      font-family: 'JetBrains Mono', monospace;
+      border: 2px solid #fff;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    }
+    .marker-pin.origin, .marker-pin.destination {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: #111;
+      font-size: 0.625rem;
+    }
+    .marker-pin.destination { background: #dc2626; }
+    .marker-pin.subway { width: 22px; height: 22px; border-radius: 50%; }
+    .marker-pin.bike { width: 20px; height: 20px; border-radius: 4px; background: #0073CE; }
+    .marker-pin.dock { width: 20px; height: 20px; border-radius: 4px; background: #00ADD0; }
+    .marker-pin.bus { width: 26px; height: 18px; border-radius: 4px; background: #00ADD0; font-size: 0.5625rem; padding: 0 2px; }
+
+    @media (max-width: 720px) {
+      .explorer-layout { grid-template-columns: 1fr; }
+      #explorer-map { height: 240px; }
+    }
+
+    /* Flow — Day-to-day composition */
+    .flow {
+      padding: 2.5rem 0 3rem;
+      border-top: 1px solid #e5e7eb;
+      background: #fafbfc;
+    }
+    .flow .container { max-width: 860px; }
+    .flow-headline {
+      font-size: 1.375rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.375rem;
+      line-height: 1.25;
+    }
+    .flow-sub {
+      font-size: 0.875rem;
+      color: #666;
+      margin-bottom: 1.5rem;
+      max-width: 640px;
+    }
+    .flow-card {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .flow-step {
+      padding: 0.875rem 1.125rem;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .flow-step:last-child { border-bottom: none; }
+    .flow-details {
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .flow-details[open] { background: #fafbfc; }
+    .flow-details summary {
+      cursor: pointer;
+      list-style: none;
+      padding: 0.875rem 1.125rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: background 0.15s;
+      user-select: none;
+    }
+    .flow-details summary::-webkit-details-marker { display: none; }
+    .flow-details summary:hover { background: #f8fafc; }
+    .flow-details-hint {
+      font-size: 0.6875rem;
+      color: #888;
+      font-weight: 500;
+      padding: 0.1875rem 0.5rem;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+    }
+    .flow-details[open] .flow-details-hint::before { content: "Collapse"; }
+    .flow-details:not([open]) .flow-details-hint::before { content: "Expand"; }
+    .flow-details .flow-plan {
+      padding: 0 1.125rem 1rem;
+    }
+    .flow-step-label {
+      font-size: 0.625rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #999;
+      font-weight: 600;
+      margin-bottom: 0.375rem;
+      display: flex;
+      align-items: center;
+      gap: 0.375rem;
+    }
+    .flow-step-label .step-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #111;
+      color: #fff;
+      font-size: 0.5625rem;
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+    .flow-prompt {
+      font-size: 0.9375rem;
+      color: #111;
+      font-style: italic;
+      line-height: 1.55;
+      font-weight: 500;
+    }
+    .flow-prompt::before { content: "\201C"; color: #bbb; }
+    .flow-prompt::after { content: "\201D"; color: #bbb; }
+    .flow-plan {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      font-size: 0.8125rem;
+      color: #333;
+    }
+    .flow-plan li {
+      padding: 0.375rem 0;
+      display: flex;
+      gap: 0.625rem;
+      align-items: flex-start;
+      line-height: 1.5;
+    }
+    .flow-plan li + li { border-top: 1px dashed #f3f4f6; }
+    .flow-plan .plan-idx {
+      flex-shrink: 0;
+      width: 18px;
+      height: 18px;
+      border-radius: 4px;
+      background: #f3f4f6;
+      color: #555;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      font-family: 'JetBrains Mono', monospace;
+      margin-top: 1px;
+    }
+    .flow-plan code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      background: #f4f4f5;
+      padding: 0.0625rem 0.3125rem;
+      border-radius: 3px;
+      color: #222;
+    }
+    .flow-plan b { font-weight: 600; color: #111; }
+    .flow-result {
+      display: flex;
+      gap: 0.875rem;
+      align-items: flex-start;
+      padding: 0.875rem 1.125rem;
+      background: #f0fdf4;
+      border-top: 1px solid #d1fae5;
+    }
+    .flow-result-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: #10b981;
+      color: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.875rem;
+      flex-shrink: 0;
+    }
+    .flow-result-body b {
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: #064e3b;
+      display: block;
+      margin-bottom: 0.25rem;
+    }
+    .flow-result-body p {
+      font-size: 0.8125rem;
+      color: #065f46;
+      line-height: 1.5;
+    }
+    .flow-cost {
+      padding: 0.75rem 1.125rem;
+      background: #fafbfc;
+      border-top: 1px solid #e5e7eb;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.375rem 1rem;
+      align-items: baseline;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.6875rem;
+      color: #666;
+    }
+    .flow-cost .cost-row { display: inline-flex; align-items: baseline; gap: 0.35rem; }
+    .flow-cost .cost-amt { color: #111; font-weight: 600; }
+    .flow-cost .cost-total {
+      margin-left: auto;
+      color: #111;
+      font-weight: 700;
+      font-size: 0.75rem;
+    }
+    .flow-footnote {
+      margin-top: 1rem;
+      font-size: 0.6875rem;
+      color: #888;
+      text-align: center;
+    }
+    .flow-footnote a { color: #555; }
+
+    @media (max-width: 640px) {
+      .flow-cost .cost-total { margin-left: 0; flex-basis: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a class="logo" href="/">
+      <svg width="20" height="20" viewBox="0 0 32 32">
+        <rect width="32" height="32" rx="6" fill="#0a0a0a"/>
+        <circle cx="8.5" cy="16" r="3.5" fill="#0073CE"/>
+        <circle cx="16" cy="16" r="3.5" fill="#FF6319"/>
+        <circle cx="23.5" cy="16" r="3.5" fill="#00ADD0"/>
+      </svg>
+      transit402
+    </a>
+    <div class="links">
+      <a href="/openapi.json">OpenAPI</a>
+      <a href="/skill.md">skill.md</a>
+      <a href="/llms.txt">llms.txt</a>
+      <a href="https://x402.org">x402</a>
+      <a href="https://mpp.dev">MPP</a>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div class="container">
+      <h1>Find the best way around the city</h1>
+      <p class="tagline"><strong>In real time.</strong> MTA subway, MTA bus, and Citi Bike — one API for any NYC agent.</p>
+      <div class="pricing-row">
+        <span class="price-tag">$0.02 per check</span>
+      </div>
+      <div class="hero-ctas">
+        <a href="#get-started" class="hero-cta primary">Get started →</a>
+      </div>
+      <a href="#transparency" class="eigen-badge" title="This service runs on verified EigenCloud infrastructure">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+          <path d="M8 0.5L1.5 3.5v4.5c0 3.9 2.7 7.1 6.5 8 3.8-.9 6.5-4.1 6.5-8V3.5L8 0.5z" fill="#1a73e8"/>
+          <path d="M5.25 8.25L7 10.25l3.75-4.5" stroke="#fff" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="eigen-badge-text">
+          <span class="eigen-badge-title">Source Code Verified</span>
+          <span class="eigen-badge-sub">Deployed on EigenCloud</span>
+        </span>
+      </a>
+    </div>
+  </section>
+
+  <section class="explorer" id="explorer">
+    <div class="container">
+      <p class="section-label">Prompts you can ask your agent</p>
+      <h2 class="explorer-headline">Real-time MTA + Citi Bike, answered from one API</h2>
+      <div class="explorer-stats">
+        <div class="explorer-stat"><span class="explorer-stat-dot" style="background:#FF6319"></span><b>496</b><span class="explorer-stat-label">subway stations</span></div>
+        <div class="explorer-stat"><span class="explorer-stat-dot" style="background:#0073CE"></span><b>2,400+</b><span class="explorer-stat-label">Citi Bike stations</span></div>
+        <div class="explorer-stat"><span class="explorer-stat-dot" style="background:#00ADD0"></span><b>2,229</b><span class="explorer-stat-label">bus stops</span></div>
+        <div class="explorer-stat-sub">All 5 boroughs · live MTA GTFS-RT + SIRI + Lyft GBFS</div>
+      </div>
+      <div class="explorer-layout">
+        <div class="explorer-prompts" id="explorer-prompts"></div>
+        <div class="explorer-panel">
+          <div id="explorer-map"></div>
+          <div class="explorer-response" id="explorer-response">
+            <div class="explorer-empty">Click a prompt to see the response.</div>
+          </div>
+        </div>
+      </div>
+
+      <p class="explorer-footnote">
+        Pre-cached from live MTA and Lyft feeds. For fresh data in your agent: <code>GET /subway/nearest?lat=&amp;lng=</code> · <a href="/openapi.json">OpenAPI</a> · <a href="/skill.md">skill.md</a>
+      </p>
+    </div>
+  </section>
+
+  <section class="get-started" id="get-started">
+    <div class="container">
+      <p class="section-label">Get started</p>
+
+      <div class="wallet-tabs">
+        <button class="wallet-tab active" data-tab="agentcash">AgentCash</button>
+        <button class="wallet-tab" data-tab="privy">Privy</button>
+        <button class="wallet-tab" data-tab="tempo">Tempo Wallet</button>
+      </div>
+
+      <div class="tab-content active" id="agentcash">
+        <div class="steps">
+          <div class="step">
+            <div class="step-number">1</div>
+            <div class="step-content">
+              <h3>Set up AgentCash</h3>
+              <p>Creates a wallet and shows your USDC deposit address — fund with at least $0.10 before the next step.</p>
+              <div class="code-block">
+                <code>$ npx agentcash onboard</code>
+                <button class="code-copy-btn" data-copy="npx agentcash onboard" aria-label="Copy command"></button>
+              </div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-number">2</div>
+            <div class="step-content">
+              <h3>Make a test call</h3>
+              <p>Hits a live endpoint for $0.02 and prints the response — confirms your wallet pays end-to-end.</p>
+              <div class="code-block">
+                <code>$ npx agentcash try https://transit402.dev</code>
+                <button class="code-copy-btn" data-copy="npx agentcash try https://transit402.dev" aria-label="Copy command"></button>
+              </div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-number">3</div>
+            <div class="step-content">
+              <h3>Add to your agent</h3>
+              <p>Registers the API in your agent's config so it can pay automatically on every call.</p>
+              <div class="code-block">
+                <code>$ npx agentcash add https://transit402.dev</code>
+                <button class="code-copy-btn" data-copy="npx agentcash add https://transit402.dev" aria-label="Copy command"></button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="privy">
+        <div class="steps">
+          <div class="step">
+            <div class="step-number">1</div>
+            <div class="step-content">
+              <h3>Paste into your AI assistant</h3>
+              <p>Privy's skill agent sets up a wallet and handles x402 payments automatically — no CLI needed.</p>
+              <p class="setup-label">SETUP PROMPT</p>
+              <div class="code-block">
+                <code>Set up https://agents.privy.io/skill.md</code>
+                <button class="code-copy-btn" data-copy="Set up https://agents.privy.io/skill.md" aria-label="Copy prompt"></button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="tempo">
+        <div class="steps">
+          <div class="step">
+            <div class="step-number">1</div>
+            <div class="step-content">
+              <h3>Paste into your AI assistant</h3>
+              <p>Creates a Tempo smart wallet, funds it with USDC, and enables x402 payments on any supported API.</p>
+              <p class="setup-label">SETUP PROMPT</p>
+              <div class="code-block">
+                <code>Read https://tempo.xyz/SKILL.md and set up a Tempo Wallet. Fund it with USDC.</code>
+                <button class="code-copy-btn" data-copy="Read https://tempo.xyz/SKILL.md and set up a Tempo Wallet. Fund it with USDC." aria-label="Copy prompt"></button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="flow">
+    <div class="container">
+      <p class="section-label">Day-to-day</p>
+      <h2 class="flow-headline">How an agent chains this with other services</h2>
+      <p class="flow-sub">One prompt, multiple tool calls, one answer. transit402 is one block in a broader agent flow.</p>
+
+      <div class="flow-card">
+        <div class="flow-step">
+          <div class="flow-step-label">Prompt</div>
+          <div class="flow-prompt">Heading home from 45th &amp; 3rd Ave to McCarren Park in 5 min. Put me on an e-bike if one's close. Email me the plan.</div>
+        </div>
+
+        <div class="flow-result">
+          <span class="flow-result-icon">✉</span>
+          <div class="flow-result-body">
+            <b>Email sent · 34 seconds after prompt</b>
+            <p>"E-bike wins by 3 min. Pick up at <b>E 47 St &amp; 3rd Ave</b> (4 e-bikes, 1 min walk), ride the Williamsburg Bridge, dock at <b>N 12 St &amp; Bedford Ave</b> (8 open docks). Total 18 min. Subway fallback: 7 to Grand Central → L from Union Sq to Bedford, next train in 3 min."</p>
+          </div>
+        </div>
+
+        <div class="flow-cost">
+          <span class="cost-row"><code>transit402.dev</code> · 4 calls · <span class="cost-amt">$0.08</span></span>
+          <span class="cost-row"><code>stableemail.dev</code> · 1 email · <span class="cost-amt">$0.04</span></span>
+          <span class="cost-total">Total: $0.12</span>
+        </div>
+      </div>
+
+      <p class="flow-footnote">
+        Mix and match with any x402-paid service.
+        Directory: <a href="https://www.x402scan.com" target="_blank" rel="noopener">x402scan</a> ·
+        <a href="https://agentcash.dev" target="_blank" rel="noopener">AgentCash</a>
+      </p>
+    </div>
+  </section>
+
+  <div class="container">
+
+    <section class="services">
+      <p class="section-label">Endpoints</p>
+      <div class="services-grid">
+
+        <div class="service-card">
+          <div class="service-header">
+            <div class="service-icon" style="background: #0073CE;"></div>
+            <div class="service-title">Citi Bike</div>
+            <div class="service-price" style="background: #0073CE;">$0.02</div>
+          </div>
+          <div class="service-endpoints">
+            <div class="endpoint-path">/citibike/nearest</div>
+            <div class="endpoint-path">/citibike/dock</div>
+          </div>
+          <p class="service-meta">Real-time bike availability via GBFS. Find available bikes or open docks with walking time estimates.</p>
+        </div>
+
+        <div class="service-card">
+          <div class="service-header">
+            <div class="service-icon" style="background: #FF6319;"></div>
+            <div class="service-title">Subway</div>
+            <div class="service-price" style="background: #FF6319;">$0.02</div>
+          </div>
+          <div class="service-endpoints">
+            <div class="endpoint-path">/subway/nearest</div>
+            <div class="endpoint-path">/subway/alerts</div>
+          </div>
+          <p class="service-meta">496 stations. GTFS-RT feeds from the MTA, updated every 30 seconds. Live arrivals with line, direction, and ETA — plus active service alerts with severity, direction, and estimated delay minutes.</p>
+          <div class="subway-lines">
+            <span class="subway-pill" style="background:#EE352E">1</span>
+            <span class="subway-pill" style="background:#EE352E">2</span>
+            <span class="subway-pill" style="background:#EE352E">3</span>
+            <span class="subway-pill" style="background:#00933C">4</span>
+            <span class="subway-pill" style="background:#00933C">5</span>
+            <span class="subway-pill" style="background:#00933C">6</span>
+            <span class="subway-pill" style="background:#B933AD">7</span>
+            <span class="subway-pill" style="background:#0039A6">A</span>
+            <span class="subway-pill" style="background:#0039A6">C</span>
+            <span class="subway-pill" style="background:#0039A6">E</span>
+            <span class="subway-pill" style="background:#FF6319">B</span>
+            <span class="subway-pill" style="background:#FF6319">D</span>
+            <span class="subway-pill" style="background:#FF6319">F</span>
+            <span class="subway-pill" style="background:#FF6319">M</span>
+            <span class="subway-pill" style="background:#6CBE45">G</span>
+            <span class="subway-pill" style="background:#996633">J</span>
+            <span class="subway-pill" style="background:#996633">Z</span>
+            <span class="subway-pill" style="background:#A7A9AC">L</span>
+            <span class="subway-pill" style="background:#FCCC0A;color:#333">N</span>
+            <span class="subway-pill" style="background:#FCCC0A;color:#333">Q</span>
+            <span class="subway-pill" style="background:#FCCC0A;color:#333">R</span>
+            <span class="subway-pill" style="background:#FCCC0A;color:#333">W</span>
+            <span class="subway-pill" style="background:#808183">S</span>
+            <span class="subway-pill" style="background:#003DA5;font-size:0.5rem">SIR</span>
+          </div>
+        </div>
+
+        <div class="service-card">
+          <div class="service-header">
+            <div class="service-icon" style="background: #00ADD0;"></div>
+            <div class="service-title">Bus</div>
+            <div class="service-price" style="background: #00ADD0;">$0.02</div>
+          </div>
+          <div class="service-endpoints">
+            <div class="endpoint-path">/bus/nearest</div>
+          </div>
+          <p class="service-meta">Real-time arrival predictions via MTA SIRI. Routes, destinations, and ETAs for nearby bus stops.</p>
+        </div>
+
+      </div>
+      <p style="font-size: 0.75rem; color: #999; margin-top: 1rem; padding: 0.75rem 0; border-top: 1px solid #e5e7eb;">
+        All endpoints: <code style="font-size: 0.6875rem; background: #fff; border: 1px solid #e5e7eb; padding: 0.1rem 0.3rem; border-radius: 3px; font-family: 'JetBrains Mono', monospace; color: #555;">lat</code> required &middot; <code style="font-size: 0.6875rem; background: #fff; border: 1px solid #e5e7eb; padding: 0.1rem 0.3rem; border-radius: 3px; font-family: 'JetBrains Mono', monospace; color: #555;">lng</code> required &middot; <code style="font-size: 0.6875rem; background: #fff; border: 1px solid #e5e7eb; padding: 0.1rem 0.3rem; border-radius: 3px; font-family: 'JetBrains Mono', monospace; color: #555;">limit</code> optional (default 5, max 10)
+      </p>
+    </section>
+
+  </div>
+
+  <section class="resources">
+    <div class="container">
+      <p class="section-label">Resources</p>
+      <div class="resource-grid">
+        <a href="/openapi.json" class="resource-link">
+          <span class="resource-label">OpenAPI</span>
+          /openapi.json
+        </a>
+        <a href="/skill.md" class="resource-link">
+          <span class="resource-label">Skill Def</span>
+          /skill.md
+        </a>
+        <a href="/llms.txt" class="resource-link">
+          <span class="resource-label">LLM Context</span>
+          /llms.txt
+        </a>
+        <a href="https://mppscan.com" class="resource-link">
+          <span class="resource-label">Verify MPP</span>
+          MPP Scanner
+        </a>
+        <a href="https://x402scan.com" class="resource-link">
+          <span class="resource-label">Verify x402</span>
+          x402 Scanner
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="transparency" id="transparency">
+    <div class="container">
+      <p class="section-label">Transparency</p>
+      <p><strong>Source code verified.</strong> The binary running on our server is cryptographically linked to a specific commit of the <a href="https://github.com/mmurrs/NYCTransitx402" target="_blank" rel="noopener">open-source repository</a>. Audit the exact provenance on <a href="https://verify.eigencloud.xyz/app/0x751847d2C430E3B5a843D017EA8d0A3d453377D0" target="_blank" rel="noopener">EigenCloud</a>.</p>
+      <p><strong>Runs on an EigenCloud vTPM-attested VM.</strong> Verified boot, KMS-sealed secrets released only to the measured boot image, public logs. Every paid call emits <code>[PAY] x402 verified amount=0.02 network=eip155:8453 route=/subway/nearest</code> and <code>[PAY] x402 settled ... tx=0x...</code> once the on-chain transfer to our <a href="https://basescan.org/address/0x687E3217668DDe7c32478A3F2613750c8Bd505E9" target="_blank" rel="noopener">merchant wallet</a> lands. See <a href="https://github.com/mmurrs/NYCTransitx402/blob/main/dual402.js" target="_blank" rel="noopener"><code>dual402.js</code></a> for the verification code.</p>
+      <a href="https://verify.eigencloud.xyz/app/0x751847d2C430E3B5a843D017EA8d0A3d453377D0" class="transparency-cta" target="_blank" rel="noopener">Verify for yourself →</a>
+      <a href="https://github.com/mmurrs/NYCTransitx402" class="transparency-sublink" target="_blank" rel="noopener">or read the source →</a>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-links">
+        <a href="https://x402.org">x402</a> · <a href="https://mpp.dev">MPP</a>
+        <a href="https://agentcash.dev">AgentCash</a>
+        <a href="/openapi.json">OpenAPI</a>
+        <a href="/skill.md">skill.md</a>
+        <a href="/llms.txt">llms.txt</a>
+      </div>
+      <span class="footer-note">Payments settle in USDC via Tempo (MPP) or Base (x402)</span>
+    </div>
+  </footer>
+
+  <script>
+    // Copy buttons on command / prompt snippets
+    const copyIconSvg = '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="5" y="5" width="9" height="9" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M11 5V3.5A1.5 1.5 0 009.5 2h-6A1.5 1.5 0 002 3.5v6A1.5 1.5 0 003.5 11H5" stroke="currentColor" stroke-width="1.5"/></svg>';
+    const copiedIconSvg = '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5L6.5 12L13 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    document.querySelectorAll('.code-copy-btn').forEach(btn => {
+      btn.innerHTML = copyIconSvg;
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const text = btn.dataset.copy || btn.previousElementSibling?.textContent || '';
+        navigator.clipboard.writeText(text).then(() => {
+          btn.classList.add('copied');
+          btn.innerHTML = copiedIconSvg;
+          setTimeout(() => {
+            btn.classList.remove('copied');
+            btn.innerHTML = copyIconSvg;
+          }, 1200);
+        });
+      });
+    });
+
+    // Wallet tab switching
+    document.querySelectorAll('.wallet-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        const targetTab = tab.dataset.tab;
+
+        // Update active tab button
+        document.querySelectorAll('.wallet-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+
+        // Update active tab content
+        document.querySelectorAll('.tab-content').forEach(content => {
+          content.classList.remove('active');
+        });
+        document.getElementById(targetTab).classList.add('active');
+      });
+    });
+  </script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script>
+    // ───── Explorer widget ─────
+    // Loads pre-baked /examples.json, renders 5 clickable prompt cards on the
+    // left, and animates the map + response panel on click. Zero live API
+    // calls from this widget — everything served at the Vercel edge.
+
+    const SUBWAY_COLOR = {
+      "1":"#EE352E","2":"#EE352E","3":"#EE352E","4":"#00933C","5":"#00933C","6":"#00933C",
+      "7":"#B933AD","A":"#0039A6","C":"#0039A6","E":"#0039A6","B":"#FF6319","D":"#FF6319",
+      "F":"#FF6319","M":"#FF6319","G":"#6CBE45","J":"#996633","Z":"#996633","L":"#A7A9AC",
+      "N":"#FCCC0A","Q":"#FCCC0A","R":"#FCCC0A","W":"#FCCC0A","S":"#808183","SIR":"#003DA5",
+      "GS":"#808183","FS":"#808183","H":"#808183",
+    };
+    const subwayColor = (line) => SUBWAY_COLOR[line] || "#666";
+    const subwayTextColor = (line) => ["N","Q","R","W"].includes(line) ? "#333" : "#fff";
+
+    let _map, _layer;
+    function ensureMap() {
+      if (_map) return _map;
+      _map = L.map("explorer-map", {
+        zoomControl: true,
+        attributionControl: false,
+        scrollWheelZoom: false,
+      }).setView([40.73, -73.99], 12);
+      L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
+        maxZoom: 19,
+        subdomains: "abcd",
+      }).addTo(_map);
+      L.control.attribution({ prefix: "" })
+        .addAttribution("&copy; OpenStreetMap &copy; CARTO")
+        .addTo(_map);
+      _layer = L.layerGroup().addTo(_map);
+      return _map;
+    }
+
+    function divIcon(cls, label) {
+      return L.divIcon({
+        className: "",
+        html: `<div class="marker-pin ${cls}">${label || ""}</div>`,
+        iconSize: null,
+      });
+    }
+
+    function subwayIcon(line) {
+      const bg = subwayColor(line);
+      const fg = subwayTextColor(line);
+      const html = `<div class="marker-pin subway" style="background:${bg};color:${fg}">${line}</div>`;
+      return L.divIcon({ className: "", html, iconSize: null });
+    }
+
+    function renderPromptCards(prompts, onClick) {
+      const root = document.getElementById("explorer-prompts");
+      root.innerHTML = "";
+      prompts.forEach((p, i) => {
+        const btn = document.createElement("div");
+        btn.className = "explorer-prompt";
+        btn.setAttribute("role", "button");
+        btn.setAttribute("tabindex", "0");
+        btn.dataset.id = p.id;
+        btn.innerHTML = `
+          <span class="explorer-prompt-kind ${p.kind}">${p.kind}</span>
+          <div class="explorer-prompt-body">
+            <div class="explorer-prompt-title">${escapeHtml(p.title)}</div>
+            <button class="explorer-prompt-copy" type="button" title="Copy prompt" aria-label="Copy prompt">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="5" y="5" width="9" height="9" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M11 5V3.5A1.5 1.5 0 009.5 2h-6A1.5 1.5 0 002 3.5v6A1.5 1.5 0 003.5 11H5" stroke="currentColor" stroke-width="1.5"/></svg>
+            </button>
+          </div>
+          <div class="explorer-prompt-sub">${escapeHtml(p.subtitle || "")}</div>
+        `;
+        btn.addEventListener("click", (e) => {
+          // Ignore clicks that came from inside the copy button
+          if (e.target.closest(".explorer-prompt-copy")) return;
+          onClick(p, btn);
+        });
+        btn.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onClick(p, btn); }
+        });
+        const copyBtn = btn.querySelector(".explorer-prompt-copy");
+        copyBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          navigator.clipboard.writeText(p.title).then(() => {
+            copyBtn.classList.add("copied");
+            copyBtn.innerHTML = `<svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5L6.5 12L13 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+            setTimeout(() => {
+              copyBtn.classList.remove("copied");
+              copyBtn.innerHTML = `<svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="5" y="5" width="9" height="9" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M11 5V3.5A1.5 1.5 0 009.5 2h-6A1.5 1.5 0 002 3.5v6A1.5 1.5 0 003.5 11H5" stroke="currentColor" stroke-width="1.5"/></svg>`;
+            }, 1200);
+          });
+        });
+        root.appendChild(btn);
+        if (i === 0) btn.dataset.initial = "true";
+      });
+    }
+
+    function markerFor(call, point) {
+      const { endpoint, response } = call;
+      const results = response?.results || [];
+      const markers = [];
+      if (endpoint.startsWith("/subway/")) {
+        for (const r of results) {
+          const line = (r.lines && r.lines[0]) || "S";
+          const m = L.marker([r.lat, r.lng], { icon: subwayIcon(line) })
+            .bindTooltip(`${r.walk_minutes}m walk`, { direction: "right", permanent: true, offset: [6, 0] });
+          markers.push(m);
+        }
+      } else if (endpoint === "/citibike/nearest") {
+        for (const r of results) {
+          const total = r.bikes_available ?? 0;
+          const m = L.marker([r.lat, r.lng], { icon: divIcon("bike", String(total)) })
+            .bindTooltip(`${r.walk_minutes}m walk`, { direction: "right", permanent: true, offset: [6, 0] });
+          markers.push(m);
+        }
+      } else if (endpoint === "/citibike/dock") {
+        for (const r of results) {
+          const label = String(r.docks_available ?? 0);
+          const m = L.marker([r.lat, r.lng], { icon: divIcon("dock", label) })
+            .bindTooltip(`${r.walk_minutes}m walk`, { direction: "right", permanent: true, offset: [6, 0] });
+          markers.push(m);
+        }
+      } else if (endpoint === "/bus/nearest") {
+        for (const r of results) {
+          const label = (r.routes && r.routes[0]) || "BUS";
+          const m = L.marker([r.lat, r.lng], { icon: divIcon("bus", label) })
+            .bindTooltip(`${r.walk_minutes}m walk`, { direction: "right", permanent: true, offset: [6, 0] });
+          markers.push(m);
+        }
+      }
+      return markers;
+    }
+
+    function renderMap(prompt) {
+      ensureMap();
+      _layer.clearLayers();
+
+      const points = [];
+      // Origin pin
+      if (prompt.origin) {
+        L.marker([prompt.origin.lat, prompt.origin.lng], { icon: divIcon("origin", "A") })
+          .bindTooltip(prompt.origin.name, { direction: "top", offset: [0, -14], permanent: false })
+          .addTo(_layer);
+        points.push([prompt.origin.lat, prompt.origin.lng]);
+      }
+      if (prompt.destination) {
+        L.marker([prompt.destination.lat, prompt.destination.lng], { icon: divIcon("destination", "B") })
+          .bindTooltip(prompt.destination.name, { direction: "top", offset: [0, -14] })
+          .addTo(_layer);
+        points.push([prompt.destination.lat, prompt.destination.lng]);
+      }
+
+      // Result markers + dashed walking lines from origin/destination
+      for (const call of prompt.calls || []) {
+        if (call.error || !call.response) continue;
+        const origin = call.point;
+        const ms = markerFor(call, origin);
+        const results = call.response?.results || [];
+        // Walking lines intentionally omitted — the walk time shown on
+        // each result card ("2 min walk") is the useful signal. Map stays
+        // visually clean: origin/destination pins + station markers only.
+        for (const m of ms) {
+          m.addTo(_layer);
+          points.push(m.getLatLng());
+        }
+      }
+
+      if (points.length > 0) {
+        const bounds = L.latLngBounds(points);
+        _map.flyToBounds(bounds, { padding: [40, 40], maxZoom: 15, duration: 0.8 });
+      }
+    }
+
+    function groupLabel(call) {
+      const { endpoint, at, point } = call;
+      if (endpoint === "/subway/alerts") return "Active subway alerts";
+      const mode = endpoint.includes("subway") ? "Subway near"
+        : endpoint.includes("bus") ? "Bus stops near"
+        : endpoint === "/citibike/nearest" ? "Bikes near"
+        : endpoint === "/citibike/dock" ? "Docks near"
+        : endpoint;
+      return `${mode} ${point?.name || at}`;
+    }
+
+    // Build a Google Maps directions link from origin point to the first result
+    // (or just drop a pin if results empty). Transit mode unless this is a bike call.
+    function groupMapsLink(call) {
+      const results = call.response?.results || [];
+      const origin = call.point;
+      if (!origin || !results.length) return "";
+      const r = results[0];
+      const mode = call.endpoint.includes("citibike") ? "bicycling"
+        : call.endpoint.includes("bus") ? "transit"
+        : call.endpoint.includes("subway") ? "transit"
+        : "transit";
+      const url = `https://www.google.com/maps/dir/?api=1&origin=${origin.lat},${origin.lng}&destination=${r.lat},${r.lng}&travelmode=${mode}`;
+      return `<a class="response-maps-link" href="${url}" target="_blank" rel="noopener">↗ Open in Maps</a>`;
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, (c) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+      }[c]));
+    }
+
+    // Tiny JSON syntax highlighter — keys blue, strings green, numbers
+    // amber, booleans pink. Regex-based against already-HTML-escaped JSON
+    // (so " has been replaced by &quot;).
+    function highlightJSON(json) {
+      const pretty = JSON.stringify(json, null, 2);
+      return escapeHtml(pretty)
+        // Keys: "foo": — must come first so string-value rule doesn't grab them
+        .replace(/(&quot;(?:\\u[a-fA-F0-9]{4}|\\[^u]|[^\\&])*&quot;)(\s*:)/g,
+                 '<span class="k">$1</span>$2')
+        // String values: : "foo"
+        .replace(/: (&quot;(?:\\u[a-fA-F0-9]{4}|\\[^u]|[^\\&])*&quot;)/g,
+                 ': <span class="s">$1</span>')
+        // Number values: : 123 or : -4.5
+        .replace(/: (-?\d+\.?\d*)/g, ': <span class="n">$1</span>')
+        // Booleans + null
+        .replace(/: (true|false|null)/g, ': <span class="b">$1</span>');
+    }
+
+    function renderRawBlock(call) {
+      if (call.error) return "";
+      const { endpoint, point, limit = 3, response } = call;
+      const params = new URLSearchParams({
+        lat: point.lat.toFixed(4),
+        lng: point.lng.toFixed(4),
+        limit: String(limit),
+      }).toString();
+      const reqLine = `<span class="req-line"><span class="req-verb">GET</span> <span class="req-path">${escapeHtml(endpoint)}?${escapeHtml(params)}</span></span>`;
+      return `<div class="response-raw">${reqLine}${highlightJSON(response)}</div>`;
+    }
+
+    function renderCard(call) {
+      const results = call.response?.results || [];
+      if (call.error) {
+        return `<div class="response-card"><div class="response-name" style="color:#b91c1c">${call.endpoint}: ${call.error}</div></div>`;
+      }
+      if (results.length === 0) {
+        return `<div class="response-card"><div class="response-name" style="color:#999">No results</div></div>`;
+      }
+      return results.map(r => {
+        const isAlert = call.endpoint === "/subway/alerts";
+        const name = isAlert ? (r.header || (r.lines || []).join(", ")) : r.name;
+        const walk = isAlert
+          ? (r.active_until ? `until ${new Date(r.active_until).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}` : "ongoing")
+          : (r.walk_minutes === 0 ? "here" : `${r.walk_minutes} min walk`);
+        let chips = "";
+        let arrivals = "";
+        if (call.endpoint === "/subway/alerts") {
+          chips = (r.lines || []).map(l =>
+            `<span class="chip subway" style="background:${subwayColor(l)};color:${subwayTextColor(l)}">${l}</span>`
+          ).join("");
+          const sev = r.severity || "info";
+          chips += `<span class="chip severity ${sev}">${sev.replace("_", " ")}</span>`;
+          if (r.direction && r.direction !== "both") {
+            chips += `<span class="chip">${r.direction}</span>`;
+          }
+          if (r.estimated_minutes) {
+            chips += `<span class="chip">~${r.estimated_minutes}m</span>`;
+          }
+          // The alert description is often long; truncate for display.
+          const desc = (r.description || "").split("\n")[0].slice(0, 220);
+          arrivals = desc ? `<div class="arrival alert-desc">${desc}</div>` : "";
+        } else if (call.endpoint.startsWith("/subway/")) {
+          chips = (r.lines || []).map(l =>
+            `<span class="chip subway" style="background:${subwayColor(l)};color:${subwayTextColor(l)}">${l}</span>`
+          ).join("");
+          // Group arrivals by line then direction so rows read: [L] Uptown 5m · 8m
+          const grouped = {};
+          for (const a of (r.arrivals || [])) {
+            if (!grouped[a.line]) grouped[a.line] = {};
+            if (!grouped[a.line][a.direction]) grouped[a.line][a.direction] = [];
+            grouped[a.line][a.direction].push(a.minutes);
+          }
+          const rows = [];
+          for (const line of Object.keys(grouped)) {
+            const bg = subwayColor(line);
+            const fg = subwayTextColor(line);
+            const chip = `<span class="chip subway" style="background:${bg};color:${fg}">${line}</span>`;
+            for (const dir of ["Uptown", "Downtown"]) {
+              const mins = (grouped[line][dir] || []).slice(0, 3);
+              if (mins.length === 0) continue;
+              const times = mins.map(m => m <= 0 ? "now" : `${m}m`).join(" · ");
+              rows.push(`<div class="arrival-row">${chip}<span class="arrival-direction">${dir}</span><span class="arrival-times">${times}</span></div>`);
+            }
+          }
+          if (rows.length > 0) arrivals = `<div class="arrival">${rows.join("")}</div>`;
+        } else if (call.endpoint === "/citibike/nearest") {
+          chips = `<span class="chip ebike">${r.ebikes_available}⚡ e-bikes</span><span class="chip bike">${r.bikes_available} bikes</span><span class="chip dock">${r.docks_available} docks</span>`;
+        } else if (call.endpoint === "/citibike/dock") {
+          chips = `<span class="chip dock">${r.docks_available} open docks</span><span class="chip bike">${r.bikes_available} bikes</span>`;
+        } else if (call.endpoint === "/bus/nearest") {
+          chips = (r.routes || []).slice(0, 6).map(route => `<span class="chip route">${route}</span>`).join("");
+          arrivals = (r.arrivals || []).slice(0, 3).map(a => {
+            const when = a.minutes == null ? (a.proximity || "?") : a.minutes === 0 ? "now" : `${a.minutes}m`;
+            return `<span class="chip route" style="margin-right:4px">${a.route}</span><span style="margin-right:8px">→ ${a.destination} · ${when}</span>`;
+          }).join("");
+          if (arrivals) arrivals = `<div class="arrival">${arrivals}</div>`;
+        }
+        return `
+          <div class="response-card">
+            <div class="response-row">
+              <div class="response-name">${name}</div>
+              <div class="response-walk">${walk}</div>
+            </div>
+            <div class="response-chips">${chips}</div>
+            ${arrivals}
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderResponse(prompt, generatedAt) {
+      const root = document.getElementById("explorer-response");
+      const when = generatedAt ? new Date(generatedAt).toLocaleString("en-US", {
+        month: "short", day: "numeric", hour: "numeric", minute: "2-digit"
+      }) : "";
+      const meta = `<div class="response-meta">Cached ${when} · ${prompt.calls.length} call${prompt.calls.length === 1 ? "" : "s"}</div>`;
+      const groups = prompt.calls.map(call => `
+        <div class="response-group">
+          <div class="response-group-header">
+            <div class="response-group-label">${groupLabel(call)}</div>
+            ${groupMapsLink(call)}
+          </div>
+          ${renderCard(call)}
+          ${renderRawBlock(call)}
+        </div>
+      `).join("");
+      root.innerHTML = meta + groups;
+    }
+
+    function activatePrompt(prompt, btn, generatedAt) {
+      document.querySelectorAll(".explorer-prompt").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      renderMap(prompt);
+      renderResponse(prompt, generatedAt);
+    }
+
+    async function bootExplorer() {
+      try {
+        const res = await fetch("/examples.json", { cache: "default" });
+        if (!res.ok) throw new Error(`examples.json HTTP ${res.status}`);
+        const data = await res.json();
+        const prompts = data.prompts || [];
+        ensureMap();
+        renderPromptCards(prompts, (p, btn) => activatePrompt(p, btn, data.generatedAt));
+        // Auto-activate the first prompt
+        if (prompts.length > 0) {
+          const firstBtn = document.querySelector(".explorer-prompt[data-initial='true']");
+          if (firstBtn) activatePrompt(prompts[0], firstBtn, data.generatedAt);
+        }
+      } catch (err) {
+        console.error("Explorer failed to load:", err);
+        document.getElementById("explorer-response").innerHTML =
+          `<div class="explorer-empty">Examples temporarily unavailable (${err.message}).</div>`;
+      }
+    }
+
+    // Boot when the explorer section scrolls into view (or immediately if it's already visible)
+    const explorerEl = document.getElementById("explorer");
+    if ("IntersectionObserver" in window && explorerEl) {
+      const io = new IntersectionObserver((entries) => {
+        if (entries.some(e => e.isIntersecting)) {
+          io.disconnect();
+          bootExplorer();
+        }
+      }, { rootMargin: "200px" });
+      io.observe(explorerEl);
+    } else {
+      bootExplorer();
+    }
+  </script>
+
+</body>
+</html>

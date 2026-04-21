@@ -1,0 +1,124 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" fill="none">
+  <defs>
+    <!-- Subtle brand-color accent gradient (subway / bike / bus) -->
+    <linearGradient id="accentLine" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%"   stop-color="#FF6319"/>
+      <stop offset="38%"  stop-color="#0073CE"/>
+      <stop offset="76%"  stop-color="#00ADD0"/>
+      <stop offset="100%" stop-color="#00ADD0" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="#0a0a0a"/>
+
+  <!-- ================================================================ -->
+  <!-- PILL BAND: MTA subway line circles, one per distinct color group  -->
+  <!-- 9 pills × (60px diameter + 24px gap) = 732px, centered on 1200  -->
+  <!-- Circle centers: 264, 348, 432, 516, 600, 684, 768, 852, 936      -->
+  <!-- ================================================================ -->
+
+  <!-- Dual track lines running behind the pills (circuit / rail motif) -->
+  <line x1="60"  y1="108" x2="1140" y2="108" stroke="#191919" stroke-width="1.5"/>
+  <line x1="60"  y1="114" x2="1140" y2="114" stroke="#191919" stroke-width="1.5"/>
+
+  <!-- 1 · Red   #EE352E -->
+  <circle cx="264" cy="111" r="30" fill="#EE352E"/>
+  <text x="264" y="119" text-anchor="middle"
+    font-family="-apple-system,'Helvetica Neue',Arial,sans-serif"
+    font-weight="700" font-size="26" fill="#ffffff">1</text>
+
+  <!-- 4 · Green #00933C -->
+  <circle cx="348" cy="111" r="30" fill="#00933C"/>
+  <text x="348" y="119" text-anchor="middle"
+    font-family="-apple-system,'Helvetica Neue',Arial,sans-serif"
+    font-weight="700" font-size="26" fill="#ffffff">4</text>
+
+  <!-- 7 · Purple #B933AD -->
+  <circle cx="432" cy="111" r="30" fill="#B933AD"/>
+  <text x="432" y="119" text-anchor="middle"
+    font-family="-apple-system,'Helvetica Neue',Arial,sans-serif"
+    font-weight="700" font-size="26" fill="#ffffff">7</text>
+
+  <!-- A · Blue  #0039A6 -->
+  <circle cx="516" cy="111" r="30" fill="#0039A6"/>
+  <text x="516" y="119" text-anchor="middle"
+    font-family="-apple-system,'Helvetica Neue',Arial,sans-serif"
+    font-weight="700" font-size="26" fill="#ffffff">A</text>
+
+  <!-- F · Orange #FF6319 -->
+  <circle cx="600" cy="111" r="30" fill="#FF6319"/>
+  <text x="600" y="119" text-anchor="middle"
+    font-family="-apple-system,'Helvetica Neue',Arial,sans-serif"
+    font-weight="700" font-size="26" fill="#ffffff">F</text>
+
+  <!-- G · Lime  #6CBE45  (dark text — light bg) -->
+  <circle cx="684" cy="111" r="30" fill="#6CBE45"/>
+  <text x="684" y="119" text-anchor="middle"
+    font-family="-apple-system,'Helvetica Neue',Arial,sans-serif"
+    font-weight="700" font-size="26" fill="#000000">G</text>
+
+  <!-- J · Brown #996633 -->
+  <circle cx="768" cy="111" r="30" fill="#996633"/>
+  <text x="768" y="119" text-anchor="middle"
+    font-family="-apple-system,'Helvetica Neue',Arial,sans-serif"
+    font-weight="700" font-size="26" fill="#ffffff">J</text>
+
+  <!-- L · Silver #A7A9AC (dark text — light bg) -->
+  <circle cx="852" cy="111" r="30" fill="#A7A9AC"/>
+  <text x="852" y="119" text-anchor="middle"
+    font-family="-apple-system,'Helvetica Neue',Arial,sans-serif"
+    font-weight="700" font-size="26" fill="#000000">L</text>
+
+  <!-- N · Yellow #FCCC0A (dark text — bright bg) -->
+  <circle cx="936" cy="111" r="30" fill="#FCCC0A"/>
+  <text x="936" y="119" text-anchor="middle"
+    font-family="-apple-system,'Helvetica Neue',Arial,sans-serif"
+    font-weight="700" font-size="26" fill="#000000">N</text>
+
+  <!-- ================================================================ -->
+  <!-- WORDMARK — transit402                                             -->
+  <!-- Monospace, 100px, weight 700, off-white #f5f5f7                  -->
+  <!-- Left-aligned at x=78, baseline y=340                             -->
+  <!-- ================================================================ -->
+  <text x="78" y="340"
+    font-family="'JetBrains Mono','SF Mono','Menlo','Courier New',monospace"
+    font-weight="700"
+    font-size="100"
+    fill="#f5f5f7"
+    letter-spacing="-1">transit402</text>
+
+  <!-- ================================================================ -->
+  <!-- TAGLINE                                                           -->
+  <!-- ================================================================ -->
+  <text x="78" y="392"
+    font-family="-apple-system,'Helvetica Neue',Arial,sans-serif"
+    font-weight="400"
+    font-size="26"
+    fill="#aaaaaa">real-time NYC transit at any stop</text>
+
+  <!-- ================================================================ -->
+  <!-- SUPPORTING LINE                                                   -->
+  <!-- ================================================================ -->
+  <text x="78" y="432"
+    font-family="-apple-system,'Helvetica Neue',Arial,sans-serif"
+    font-size="19"
+    fill="#505050">subway &#183; bus &#183; citi bike &#8212; one API</text>
+
+  <!-- Colored accent strip (brand modes: subway / bike / bus) -->
+  <rect x="78" y="452" width="340" height="2" fill="url(#accentLine)"/>
+
+  <!-- ================================================================ -->
+  <!-- FOOTER                                                            -->
+  <!-- ================================================================ -->
+  <!-- Thin separator -->
+  <line x1="78" y1="574" x2="1122" y2="574" stroke="#181818" stroke-width="1"/>
+
+  <!-- Domain — right-aligned, monospace, very muted -->
+  <text x="1122" y="600"
+    text-anchor="end"
+    font-family="'JetBrains Mono','SF Mono','Menlo','Courier New',monospace"
+    font-size="17"
+    fill="#353535">transit402.dev</text>
+
+</svg>

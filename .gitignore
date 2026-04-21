@@ -1,0 +1,15 @@
+node_modules/
+.env
+.env.*
+!.env.example
+.vercel
+.claude/
+CLAUDE.md
+
+# Local build/deploy artifacts
+.build.log
+.ecloud-upgrade.log
+.msg.tmp
+.COMMIT_MSG
+.linear-ticket-draft.md
+.probe-env.mjs
