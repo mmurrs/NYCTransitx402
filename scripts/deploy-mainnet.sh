@@ -41,4 +41,5 @@ ECLOUD_ENV=mainnet-alpha ecloud compute app upgrade "$APP_ID" \
   --env MPP_REALM=transit402.dev \
   --instance-type g1-micro-1v \
   --log-visibility public \
-  --resource-usage-monitoring enable
+  --resource-usage-monitoring enable \
+  --force
