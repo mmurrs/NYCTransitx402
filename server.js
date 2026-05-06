@@ -379,21 +379,112 @@ const discoveryRoutes = [
 const lookupExample = { lat: 40.7580, lng: -73.9855, limit: 5 };
 const alertsExample = { lines: [], limit: 10 };
 
+// Example responses advertised in the 402 envelope's
+// `extensions.bazaar.info.output.example`. These must be concrete
+// response objects (not JSON Schemas). The Bazaar validator's SDK
+// parser runs Ajv against `output.example` and will reject a response
+// that still carries `required`/`properties` — even though that used
+// to pass older validators. Keep these minimal but structurally
+// identical to a real response.
+const citibikeNearestExample = {
+  results: [
+    {
+      name: "W 52 St & 11 Ave",
+      distance_feet: 420,
+      walk_minutes: 2,
+      ebikes_available: 3,
+      bikes_available: 5,
+      docks_available: 12,
+      lat: 40.7672,
+      lng: -73.9939,
+    },
+  ],
+};
+const citibikeDockExample = {
+  results: [
+    {
+      name: "W 43 St & 6 Ave",
+      distance_feet: 380,
+      walk_minutes: 2,
+      docks_available: 14,
+      bikes_available: 9,
+      lat: 40.7559,
+      lng: -73.9836,
+    },
+  ],
+};
+const subwayNearestExample = {
+  results: [
+    {
+      name: "Times Sq - 42 St",
+      distance_feet: 210,
+      walk_minutes: 1,
+      lines: ["1", "2", "3", "7", "N", "Q", "R", "W"],
+      arrivals: [
+        { line: "1", direction: "Uptown", minutes: 2 },
+        { line: "N", direction: "Downtown", minutes: 4 },
+      ],
+      lat: 40.7551,
+      lng: -73.9871,
+    },
+  ],
+};
+const subwayAlertsExample = {
+  results: [
+    {
+      lines: ["L"],
+      effect: "SIGNIFICANT_DELAYS",
+      severity: "delays",
+      direction: "both",
+      header: "L train delays",
+      description: "L trains are running with delays of 10-15 minutes due to a signal problem.",
+      estimated_minutes: "10-15",
+      active_until: null,
+    },
+  ],
+};
+const busNearestExample = {
+  results: [
+    {
+      name: "5 Av/W 42 St",
+      distance_feet: 290,
+      walk_minutes: 2,
+      routes: ["M1", "M2", "M5"],
+      arrivals: [
+        {
+          route: "M5",
+          destination: "Washington Hts 193 St",
+          minutes: 3,
+          proximity: "approaching",
+          stops_away: 1,
+        },
+      ],
+      lat: 40.7549,
+      lng: -73.9840,
+    },
+  ],
+};
+
 chargeCitibikeNearest._dualInputSchema = lookupRequestSchema;
 chargeCitibikeNearest._dualOutputSchema = listResponseSchema(citibikeNearestItemSchema);
 chargeCitibikeNearest._dualInputExample = lookupExample;
+chargeCitibikeNearest._dualOutputExample = citibikeNearestExample;
 chargeCitibikeDock._dualInputSchema = lookupRequestSchema;
 chargeCitibikeDock._dualOutputSchema = listResponseSchema(citibikeDockItemSchema);
 chargeCitibikeDock._dualInputExample = lookupExample;
+chargeCitibikeDock._dualOutputExample = citibikeDockExample;
 chargeSubway._dualInputSchema = lookupRequestSchema;
 chargeSubway._dualOutputSchema = listResponseSchema(subwayNearestItemSchema);
 chargeSubway._dualInputExample = lookupExample;
+chargeSubway._dualOutputExample = subwayNearestExample;
 chargeSubwayAlerts._dualInputSchema = alertsRequestSchema;
 chargeSubwayAlerts._dualOutputSchema = listResponseSchema(subwayAlertItemSchema);
 chargeSubwayAlerts._dualInputExample = alertsExample;
+chargeSubwayAlerts._dualOutputExample = subwayAlertsExample;
 chargeBus._dualInputSchema = lookupRequestSchema;
 chargeBus._dualOutputSchema = listResponseSchema(busNearestItemSchema);
 chargeBus._dualInputExample = lookupExample;
+chargeBus._dualOutputExample = busNearestExample;
 
 dualDiscovery(app, dual, {
   info: {
