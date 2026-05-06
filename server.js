@@ -371,16 +371,29 @@ const discoveryRoutes = [
   },
 ];
 
+// Example request bodies advertised in the 402 envelope's
+// `extensions.bazaar.info.input.body`. The Bazaar validator probes
+// candidate resources with this exact shape, so it must satisfy the
+// route's validation middleware (lat/lng present, finite, in range).
+// Lat/lng below point to Times Square — harmless anywhere in NYC.
+const lookupExample = { lat: 40.7580, lng: -73.9855, limit: 5 };
+const alertsExample = { lines: [], limit: 10 };
+
 chargeCitibikeNearest._dualInputSchema = lookupRequestSchema;
 chargeCitibikeNearest._dualOutputSchema = listResponseSchema(citibikeNearestItemSchema);
+chargeCitibikeNearest._dualInputExample = lookupExample;
 chargeCitibikeDock._dualInputSchema = lookupRequestSchema;
 chargeCitibikeDock._dualOutputSchema = listResponseSchema(citibikeDockItemSchema);
+chargeCitibikeDock._dualInputExample = lookupExample;
 chargeSubway._dualInputSchema = lookupRequestSchema;
 chargeSubway._dualOutputSchema = listResponseSchema(subwayNearestItemSchema);
+chargeSubway._dualInputExample = lookupExample;
 chargeSubwayAlerts._dualInputSchema = alertsRequestSchema;
 chargeSubwayAlerts._dualOutputSchema = listResponseSchema(subwayAlertItemSchema);
+chargeSubwayAlerts._dualInputExample = alertsExample;
 chargeBus._dualInputSchema = lookupRequestSchema;
 chargeBus._dualOutputSchema = listResponseSchema(busNearestItemSchema);
+chargeBus._dualInputExample = lookupExample;
 
 dualDiscovery(app, dual, {
   info: {
@@ -624,7 +637,14 @@ function validateLookupInput(getInput, { allowUnpaidInvalid = false } = {}) {
   };
 }
 
-const validateLookupQuery = validateLookupInput((req) => req.query);
+// Both GET and POST variants allow invalid-but-unpaid requests through
+// so x402/Bazaar discovery probes (which may arrive without params)
+// always reach the payment layer and see a 402 challenge, not a 400.
+// Paid callers with bad params still get 400 — validation runs first,
+// sees a credential, returns 400 instead of falling through.
+const validateLookupQuery = validateLookupInput((req) => req.query, {
+  allowUnpaidInvalid: true,
+});
 const validateLookupBody = validateLookupInput((req) => req.body, {
   allowUnpaidInvalid: true,
 });

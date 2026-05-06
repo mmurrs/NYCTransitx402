@@ -151,13 +151,27 @@ describe("invariants (live server)", () => {
       `${TEST_BASE_URL}/citibike/nearest`,
       "runtime resource must use BASE_URL and strip query strings"
     );
+    // Canonical method for this route is POST, so schema exposes `body`
+    // (not `queryParams`) per the x402 Bazaar BodyDiscoveryInfo shape.
     assert.ok(
-      decoded.extensions?.bazaar?.schema?.properties?.input?.properties?.queryParams,
-      "runtime challenge must advertise input schema hints"
+      decoded.extensions?.bazaar?.schema?.properties?.input?.properties?.body,
+      "runtime challenge must advertise input body schema hints"
     );
     assert.ok(
       decoded.extensions?.bazaar?.schema?.properties?.output?.properties?.example,
       "runtime challenge must advertise output schema hints"
+    );
+    // Bazaar validator uses this example to probe the endpoint — must be
+    // a real body shape (not `{}`) or the probe fails request validation.
+    const infoBody = decoded.extensions?.bazaar?.info?.input?.body;
+    assert.ok(
+      infoBody && typeof infoBody === "object" && Object.keys(infoBody).length > 0,
+      "info.input.body must carry a concrete example for Bazaar probes"
+    );
+    assert.equal(
+      decoded.extensions?.bazaar?.info?.input?.method,
+      "POST",
+      "info.input.method must be the route's canonical method, not the probing method"
     );
   });
 
@@ -226,6 +240,7 @@ describe("invariants (live server)", () => {
         "POST /citibike/nearest",
         "POST /citibike/dock",
         "POST /subway/nearest",
+        "POST /subway/alerts",
         "POST /bus/nearest",
       ],
     });
@@ -240,7 +255,7 @@ describe("invariants (live server)", () => {
     assert.ok(typeof j.info?.["x-guidance"] === "string" && j.info["x-guidance"].length > 0);
     assert.deepEqual(
       Object.keys(j.paths).sort(),
-      ["/bus/nearest", "/citibike/dock", "/citibike/nearest", "/subway/nearest"],
+      ["/bus/nearest", "/citibike/dock", "/citibike/nearest", "/subway/alerts", "/subway/nearest"],
     );
     for (const path of Object.keys(j.paths)) {
       const op = j.paths[path].post;
@@ -248,13 +263,17 @@ describe("invariants (live server)", () => {
       assert.ok(!j.paths[path].get, `discovery should prefer canonical POST for ${path}`);
       const input = op.requestBody?.content?.["application/json"]?.schema;
       assert.ok(input, `missing application/json input schema for ${path}`);
+      const output = op.responses?.["200"]?.content?.["application/json"]?.schema;
+      assert.ok(output, `missing application/json output schema for ${path}`);
+    }
+    // Lat/lng-required routes share a single body schema with a bounded limit.
+    for (const path of ["/bus/nearest", "/citibike/dock", "/citibike/nearest", "/subway/nearest"]) {
+      const input = j.paths[path].post.requestBody.content["application/json"].schema;
       assert.ok(
         Array.isArray(input.required) && input.required.includes("lat") && input.required.includes("lng"),
         `input schema for ${path} must require lat/lng`,
       );
       assert.equal(input.properties?.limit?.maximum, 10, `limit maximum must be 10 for ${path}`);
-      const output = op.responses?.["200"]?.content?.["application/json"]?.schema;
-      assert.ok(output, `missing application/json output schema for ${path}`);
     }
   });
 
@@ -365,16 +384,29 @@ describe("invariants (live server)", () => {
     );
   });
 
-  // ── C1: invalid coordinates fail validation before payment ──
-  test("C1: invalid lat/lng returns 400", async () => {
+  // ── C1: unpaid invalid coordinates still see a 402 (discovery probes
+  // without params or with bad params must reach the payment layer so
+  // x402/Bazaar validators can index the endpoint). Paid-and-invalid
+  // returns 400 — see C1b.
+  test("C1: unpaid invalid lat/lng returns 402 (discovery-friendly)", async () => {
     const r = await fetch(`${BASE}/citibike/nearest?lat=nope&lng=${LOOKUP.lng}`);
-    assert.equal(r.status, 400, "invalid coordinates must return 400");
+    assert.equal(r.status, 402, "unpaid invalid coords must return 402");
   });
 
-  // ── C2: limit bounds are enforced on canonical POST input ──
-  test("C2: limit parameter bounds checked", async () => {
+  test("C1b: paid invalid lat/lng returns 400", async () => {
+    const forged = Buffer.from(
+      JSON.stringify({ amount: "20000", payTo: ENV.X402_PAYEE_ADDRESS || ENV.RECIPIENT_WALLET }),
+    ).toString("base64");
+    const r = await fetch(`${BASE}/citibike/nearest?lat=nope&lng=${LOOKUP.lng}`, {
+      headers: { "PAYMENT-SIGNATURE": forged },
+    });
+    assert.equal(r.status, 400, "paid invalid coords must return 400");
+  });
+
+  // ── C2: unpaid out-of-range limit still 402 (same rationale as C1) ──
+  test("C2: unpaid out-of-range limit returns 402", async () => {
     const r = await fetch(`${BASE}/citibike/nearest?lat=${LOOKUP.lat}&lng=${LOOKUP.lng}&limit=11`);
-    assert.equal(r.status, 400, "limit > 10 must return 400");
+    assert.equal(r.status, 402, "unpaid out-of-range limit must return 402");
   });
 
   // ── C3: /bus/nearest returns 503 when MTA_BUS_API_KEY is absent ──

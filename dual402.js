@@ -586,7 +586,9 @@ export function createDual402(config) {
                             extra: x402Config.extra,
                             inputSchema: handler._dualInputSchema,
                             outputSchema: handler._dualOutputSchema,
-                            method: req.method,
+                            inputExample: handler._dualInputExample,
+                            outputExample: handler._dualOutputExample,
+                            method: handler._dualCanonicalMethod ?? req.method,
                           }),
                         ),
                       );
@@ -643,7 +645,14 @@ export function createDual402(config) {
             extra: x402Config.extra,
             inputSchema: handler._dualInputSchema,
             outputSchema: handler._dualOutputSchema,
-            method: req.method,
+            inputExample: handler._dualInputExample,
+            outputExample: handler._dualOutputExample,
+            // Use the route's declared canonical method (from dualDiscovery),
+            // not req.method — otherwise a discovery probe hitting GET /foo
+            // on a POST-canonical route publishes an envelope claiming the
+            // route is GET, and the Bazaar validator sends future probes
+            // with the wrong shape.
+            method: handler._dualCanonicalMethod ?? req.method,
           });
 
           patchStatusToInject402(res, paymentRequired);
@@ -783,12 +792,16 @@ function buildPaymentRequired({
   extra,
   inputSchema,
   outputSchema,
+  inputExample,
+  outputExample,
   method,
 }) {
   const extensions = buildBazaarExtensions({
     method,
     inputSchema,
     outputSchema,
+    inputExample,
+    outputExample,
   });
   return {
     x402Version: 2,
@@ -839,7 +852,13 @@ const BAZAAR_BODY_METHODS = ["POST", "PUT", "PATCH"];
  *                                        spec treats it as a hint, not a
  *                                        strictly-validated example value.
  */
-function buildBazaarExtensions({ method, inputSchema, outputSchema }) {
+function buildBazaarExtensions({
+  method,
+  inputSchema,
+  outputSchema,
+  inputExample,
+  outputExample,
+}) {
   const hasInput = inputSchema && typeof inputSchema === "object";
   const hasOutput = outputSchema && typeof outputSchema === "object";
   if (!hasInput && !hasOutput) return undefined;
@@ -848,17 +867,25 @@ function buildBazaarExtensions({ method, inputSchema, outputSchema }) {
   const isBodyMethod = BAZAAR_BODY_METHODS.includes(upper);
   const isQueryMethod = BAZAAR_QUERY_METHODS.includes(upper);
 
-  // info.input: concrete example values. We don't have real example values
-  // so we pass {} — the spec only requires the field exists. Clients read
-  // `input.method` / `input.bodyType` to decide how to encode the retry.
+  // info.input: concrete example values. The Bazaar validator probes
+  // candidate resources with the example shape declared here, so passing
+  // a real example (matching the route's input schema) lets the validator
+  // clear request-validation middleware and reach the payment layer. If
+  // no example is provided, fall back to {} — the spec only requires the
+  // field exists, but validators probing with {} won't clear routes that
+  // validate before charging.
+  const bodyExample =
+    inputExample && typeof inputExample === "object" ? inputExample : {};
+  const outExample =
+    outputExample && typeof outputExample === "object" ? outputExample : {};
   const info = {
     input: {
       type: "http",
       ...(upper && { method: upper }),
-      ...(isBodyMethod && { bodyType: "json", body: {} }),
-      ...(!isBodyMethod && hasInput && { queryParams: {} }),
+      ...(isBodyMethod && { bodyType: "json", body: bodyExample }),
+      ...(!isBodyMethod && hasInput && { queryParams: bodyExample }),
     },
-    ...(hasOutput && { output: { type: "json", example: {} } }),
+    ...(hasOutput && { output: { type: "json", example: outExample } }),
   };
 
   // schema: JSON Schema that validates `info` above. Must reference the
@@ -1359,6 +1386,15 @@ export function dualDiscovery(app, dual, config) {
         `dualDiscovery: route ${r.method.toUpperCase()} ${r.path} is missing a dual402 charge handler. ` +
           `Use dual.charge({...}) to wrap the route.`,
       );
+    }
+
+    // Stash the route's declared canonical method so the 402 envelope's
+    // bazaar info.input.method reflects the intended invocation shape,
+    // not the incidental method of whatever probe triggered the 402.
+    // When one handler is shared between GET and POST mounts, the last
+    // `method` declared in config.routes wins — declare POST (canonical).
+    if (!r.handler._dualCanonicalMethod) {
+      r.handler._dualCanonicalMethod = r.method.toUpperCase();
     }
 
     const amount = r.handler._dualAmount;
