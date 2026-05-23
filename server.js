@@ -90,6 +90,23 @@ const chargeBus = dual.charge({
 
 // --- Discovery (mounts /openapi.json + /.well-known/x402) ---
 
+const SERVICE_NAME = "NYC Transit Live";
+const SERVICE_TAGS = [
+  "nyc",
+  "new-york-city",
+  "transit",
+  "mta",
+  "subway",
+  "bus",
+  "citibike",
+  "bike-share",
+  "real-time",
+  "gtfs-rt",
+  "gbfs",
+  "agents",
+];
+const SERVICE_ICON_URL = "https://transit402.dev/favicon.svg";
+
 const lookupRequestSchema = {
   type: "object",
   additionalProperties: false,
@@ -487,8 +504,11 @@ chargeBus._dualInputExample = lookupExample;
 chargeBus._dualOutputExample = busNearestExample;
 
 dualDiscovery(app, dual, {
+  serviceName: SERVICE_NAME,
+  tags: SERVICE_TAGS,
+  iconUrl: SERVICE_ICON_URL,
   info: {
-    title: "NYC Transit Live",
+    title: SERVICE_NAME,
     description:
       "Real-time NYC transit data for agents. Canonical discovery exposes POST JSON operations for subway arrivals, bus ETAs, and Citi Bike pickup/return availability near a coordinate; browser-friendly GET aliases remain supported. Each paid check costs $0.02 via x402 or MPP.",
     version: "2.2.1",

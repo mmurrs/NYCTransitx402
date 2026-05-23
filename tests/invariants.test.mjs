@@ -25,6 +25,22 @@ const BASE = `http://127.0.0.1:${PORT}`;
 // The test server boots with BASE_URL set so D2 can assert the production
 // fix (resource URLs derived from BASE_URL, not the Host / origin IP).
 const TEST_BASE_URL = "http://test.example";
+const SERVICE_NAME = "NYC Transit Live";
+const SERVICE_ICON_URL = "https://transit402.dev/favicon.svg";
+const SERVICE_TAGS = [
+  "nyc",
+  "new-york-city",
+  "transit",
+  "mta",
+  "subway",
+  "bus",
+  "citibike",
+  "bike-share",
+  "real-time",
+  "gtfs-rt",
+  "gbfs",
+  "agents",
+];
 
 // Parse .env.test so we can assert expected network / payee from the same
 // source the server boots with.
@@ -151,6 +167,26 @@ describe("invariants (live server)", () => {
       `${TEST_BASE_URL}/citibike/nearest`,
       "runtime resource must use BASE_URL and strip query strings"
     );
+    assert.equal(
+      decoded.resource?.url,
+      `${TEST_BASE_URL}/citibike/nearest`,
+      "top-level resource.url must match the paid endpoint"
+    );
+    assert.equal(
+      decoded.resource?.serviceName,
+      SERVICE_NAME,
+      "runtime resource must advertise Bazaar serviceName"
+    );
+    assert.deepEqual(
+      decoded.resource?.tags,
+      [...SERVICE_TAGS, "Citi Bike"],
+      "runtime resource must advertise service and route tags"
+    );
+    assert.equal(
+      decoded.resource?.iconUrl,
+      SERVICE_ICON_URL,
+      "runtime resource must advertise Bazaar iconUrl"
+    );
     // Canonical method for this route is POST, so schema exposes `body`
     // (not `queryParams`) per the x402 Bazaar BodyDiscoveryInfo shape.
     assert.ok(
@@ -229,21 +265,48 @@ describe("invariants (live server)", () => {
     assert.equal(r.status, 402, "missing payTo must not buy access");
   });
 
-  // ── D1: /.well-known/x402 publishes v1 METHOD /path fallback ──
+  // ── D1: /.well-known/x402 publishes Bazaar-style x402 v2 resources ──
   test("D1: /.well-known/x402 shape", async () => {
     const r = await fetch(`${BASE}/.well-known/x402`);
     assert.equal(r.status, 200);
     const j = await r.json();
-    assert.deepEqual(j, {
-      version: 1,
-      resources: [
-        "POST /citibike/nearest",
-        "POST /citibike/dock",
-        "POST /subway/nearest",
-        "POST /subway/alerts",
-        "POST /bus/nearest",
-      ],
+    assert.equal(j.x402Version, 2);
+    const expectedPayee = ENV.X402_PAYEE_ADDRESS || ENV.RECIPIENT_WALLET;
+    assert.equal(j.payTo?.toLowerCase(), expectedPayee?.toLowerCase());
+    assert.deepEqual(j.pagination, {
+      limit: 5,
+      offset: 0,
+      total: 5,
     });
+    assert.ok(Array.isArray(j.resources), "resources must be an array");
+    const byPath = new Map(
+      j.resources.map((item) => [new URL(item.resource).pathname, item]),
+    );
+    assert.deepEqual(
+      [...byPath.keys()].sort(),
+      ["/bus/nearest", "/citibike/dock", "/citibike/nearest", "/subway/alerts", "/subway/nearest"],
+    );
+
+    for (const [path, item] of byPath.entries()) {
+      assert.equal(item.resource, `${TEST_BASE_URL}${path}`);
+      assert.equal(item.type, "http");
+      assert.equal(item.x402Version, 2);
+      assert.ok(Date.parse(item.lastUpdated), `${path} lastUpdated must be ISO-ish`);
+      assert.equal(item.serviceName, SERVICE_NAME);
+      assert.equal(item.iconUrl, SERVICE_ICON_URL);
+      assert.ok(Array.isArray(item.tags) && item.tags.includes("transit"), `${path} tags missing transit`);
+      assert.ok(item.description && item.description.length > 0, `${path} description missing`);
+      assert.ok(item.extensions?.bazaar?.info, `${path} missing bazaar info`);
+      assert.ok(item.extensions?.bazaar?.schema, `${path} missing bazaar schema`);
+      assert.ok(Array.isArray(item.accepts) && item.accepts.length === 1, `${path} accepts missing`);
+      const accept = item.accepts[0];
+      assert.equal(accept.scheme, "exact");
+      assert.equal(accept.network, ENV.X402_NETWORK || "eip155:8453");
+      assert.equal(accept.amount, "20000");
+      assert.equal(accept.resource, item.resource);
+      assert.equal(accept.payTo?.toLowerCase(), expectedPayee?.toLowerCase());
+      assert.ok(accept.asset && accept.asset.startsWith("0x"), `${path} asset missing`);
+    }
   });
 
   // ── D2: OpenAPI is canonical and exposes POST JSON schemas ──
@@ -253,6 +316,9 @@ describe("invariants (live server)", () => {
     const j = await r.json();
     assert.equal(j.openapi, "3.1.0");
     assert.ok(typeof j.info?.["x-guidance"] === "string" && j.info["x-guidance"].length > 0);
+    assert.equal(j["x-service-info"]?.serviceName, SERVICE_NAME);
+    assert.deepEqual(j["x-service-info"]?.tags, SERVICE_TAGS);
+    assert.equal(j["x-service-info"]?.iconUrl, SERVICE_ICON_URL);
     assert.deepEqual(
       Object.keys(j.paths).sort(),
       ["/bus/nearest", "/citibike/dock", "/citibike/nearest", "/subway/alerts", "/subway/nearest"],

@@ -471,6 +471,32 @@ export function createDual402(config) {
           (typeof req.path === "string" && req.path) ||
           String(req.originalUrl || "").split("?")[0] ||
           "/";
+        const method = String(handler._dualCanonicalMethod ?? req.method ?? "GET").toUpperCase();
+        const routeKey = `${method} ${route}`;
+        const inputSchema =
+          handler._dualInputSchemasByRoute?.[routeKey] ??
+          handler._dualInputSchemasByMethod?.[method] ??
+          handler._dualInputSchema;
+        const outputSchema =
+          handler._dualOutputSchemasByRoute?.[routeKey] ??
+          handler._dualOutputSchemasByMethod?.[method] ??
+          handler._dualOutputSchema;
+        const tags = handler._dualTagsByRoute?.[routeKey] ?? handler._dualTags;
+        const resourceUrl = `${resolveBaseUrl(req)}${route}`;
+        const paymentResource = buildPaymentResourceInfo({
+          resourceUrl,
+          description,
+          serviceName: handler._dualServiceName,
+          tags,
+          iconUrl: handler._dualIconUrl,
+        });
+        const extensions = buildBazaarExtensions({
+          method,
+          inputSchema,
+          outputSchema,
+          inputExample: handler._dualInputExample,
+          outputExample: handler._dualOutputExample,
+        });
         try {
           // ── Path 1: x402 credential ──
           // `payment-signature` is the v2 header; `x-payment` is the v1
@@ -486,7 +512,6 @@ export function createDual402(config) {
             // validate the signature against. Same shape as the 402 challenge
             // accepts[0] entry — identical source of truth so they can't
             // drift.
-            const resourceUrl = `${resolveBaseUrl(req)}${route}`;
             const paymentRequirements = buildAcceptsEntry({
               network: x402Config.network,
               amountRaw,
@@ -502,6 +527,8 @@ export function createDual402(config) {
               payTo: x402Config.payTo,
               timeoutMs: x402Config.timeoutMs,
               paymentRequirements,
+              resource: paymentResource,
+              extensions,
               cdpAuth: x402Config.cdpAuth,
               onVerify: onVerify
                 ? (payload) => onVerify(payload, { route, amount })
@@ -523,6 +550,10 @@ export function createDual402(config) {
                 x402Config.timeoutMs,
                 verified.paymentRequirements ?? paymentRequirements,
                 x402Config.cdpAuth,
+                {
+                  resource: paymentResource,
+                  extensions,
+                },
               );
 
               const logSettle = (result) => {
@@ -571,7 +602,6 @@ export function createDual402(config) {
                   // challenge on the side so a human debugger can still
                   // see what the route expected.
                   if (!res.headersSent) {
-                    const resourceUrl = `${resolveBaseUrl(req)}${route}`;
                     try {
                       res.setHeader(
                         "PAYMENT-REQUIRED",
@@ -584,11 +614,14 @@ export function createDual402(config) {
                             resourceUrl,
                             description,
                             extra: x402Config.extra,
-                            inputSchema: handler._dualInputSchema,
-                            outputSchema: handler._dualOutputSchema,
+                            inputSchema,
+                            outputSchema,
                             inputExample: handler._dualInputExample,
                             outputExample: handler._dualOutputExample,
-                            method: handler._dualCanonicalMethod ?? req.method,
+                            serviceName: handler._dualServiceName,
+                            tags,
+                            iconUrl: handler._dualIconUrl,
+                            method,
                           }),
                         ),
                       );
@@ -633,8 +666,6 @@ export function createDual402(config) {
           // mppx (or anything downstream) returns 402, we layer the x402
           // PAYMENT-REQUIRED header onto the same response. One 402, two
           // protocol challenges.
-          const resourceUrl = `${resolveBaseUrl(req)}${route}`;
-
           const paymentRequired = buildPaymentRequired({
             network: x402Config.network,
             amountRaw,
@@ -643,16 +674,19 @@ export function createDual402(config) {
             resourceUrl,
             description,
             extra: x402Config.extra,
-            inputSchema: handler._dualInputSchema,
-            outputSchema: handler._dualOutputSchema,
+            inputSchema,
+            outputSchema,
             inputExample: handler._dualInputExample,
             outputExample: handler._dualOutputExample,
+            serviceName: handler._dualServiceName,
+            tags,
+            iconUrl: handler._dualIconUrl,
             // Use the route's declared canonical method (from dualDiscovery),
             // not req.method — otherwise a discovery probe hitting GET /foo
             // on a POST-canonical route publishes an envelope claiming the
             // route is GET, and the Bazaar validator sends future probes
             // with the wrong shape.
-            method: handler._dualCanonicalMethod ?? req.method,
+            method,
           });
 
           patchStatusToInject402(res, paymentRequired);
@@ -782,6 +816,27 @@ function buildAcceptsEntry({
   return entry;
 }
 
+function buildPaymentResourceInfo({
+  resourceUrl,
+  description,
+  method,
+  serviceName,
+  tags,
+  iconUrl,
+}) {
+  return {
+    url: resourceUrl ?? "",
+    ...(typeof method === "string" &&
+      method.length > 0 && { method: method.toUpperCase() }),
+    ...(typeof description === "string" && description.length > 0 && { description }),
+    mimeType: "application/json",
+    ...(typeof serviceName === "string" &&
+      serviceName.length > 0 && { serviceName }),
+    ...(Array.isArray(tags) && tags.length > 0 && { tags }),
+    ...(typeof iconUrl === "string" && iconUrl.length > 0 && { iconUrl }),
+  };
+}
+
 function buildPaymentRequired({
   network,
   amountRaw,
@@ -795,6 +850,9 @@ function buildPaymentRequired({
   inputExample,
   outputExample,
   method,
+  serviceName,
+  tags,
+  iconUrl,
 }) {
   const extensions = buildBazaarExtensions({
     method,
@@ -813,13 +871,14 @@ function buildPaymentRequired({
     // Include `method` so clients that key off `resource.method` (e.g.
     // AgentCash auto-pay) know this is a POST/PUT/PATCH route and
     // should preserve the request body on the paid retry.
-    resource: {
-      url: resourceUrl,
-      ...(typeof method === "string" &&
-        method.length > 0 && { method: method.toUpperCase() }),
-      description: description ?? "",
-      mimeType: "application/json",
-    },
+    resource: buildPaymentResourceInfo({
+      resourceUrl,
+      method,
+      description,
+      serviceName,
+      tags,
+      iconUrl,
+    }),
     ...(extensions && { extensions }),
   };
 }
@@ -1123,28 +1182,130 @@ function canonicalizeRequirements(req) {
   return out;
 }
 
+function asObject(value) {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? value
+    : null;
+}
+
+function resourceInfoFromRequirements(requirements) {
+  if (!requirements || typeof requirements !== "object") return undefined;
+  if (typeof requirements.resource !== "string" || requirements.resource.length === 0) {
+    return undefined;
+  }
+  return buildPaymentResourceInfo({
+    resourceUrl: requirements.resource,
+    description: requirements.description,
+  });
+}
+
+function normalizePaymentResource(value, fallbackResource) {
+  const resource = asObject(value);
+  const normalized =
+    typeof value === "string" && value.length > 0
+      ? buildPaymentResourceInfo({ resourceUrl: value })
+      : resource && typeof resource.url === "string" && resource.url.length > 0
+        ? {
+            url: resource.url,
+            ...(typeof resource.description === "string" &&
+              resource.description.length > 0 && {
+                description: resource.description,
+              }),
+            ...(typeof resource.mimeType === "string" &&
+              resource.mimeType.length > 0 && { mimeType: resource.mimeType }),
+            ...(typeof resource.serviceName === "string" &&
+              resource.serviceName.length > 0 && {
+                serviceName: resource.serviceName,
+              }),
+            ...(Array.isArray(resource.tags) &&
+              resource.tags.every((tag) => typeof tag === "string") && {
+                tags: resource.tags,
+              }),
+            ...(typeof resource.iconUrl === "string" &&
+              resource.iconUrl.length > 0 && { iconUrl: resource.iconUrl }),
+          }
+        : undefined;
+
+  if (!fallbackResource) return normalized;
+  // Server-owned fallback wins for URL/description and identity. If this
+  // is settle-after-verify, `normalized` is already the canonical payload
+  // from verify, so merge to preserve service metadata not present in the
+  // strict PaymentRequirements object.
+  return {
+    ...(normalized ?? {}),
+    ...fallbackResource,
+    mimeType: fallbackResource.mimeType ?? normalized?.mimeType ?? "application/json",
+    ...(fallbackResource.serviceName
+      ? { serviceName: fallbackResource.serviceName }
+      : normalized?.serviceName
+        ? { serviceName: normalized.serviceName }
+        : {}),
+    ...(fallbackResource.tags
+      ? { tags: fallbackResource.tags }
+      : normalized?.tags
+        ? { tags: normalized.tags }
+        : {}),
+    ...(fallbackResource.iconUrl
+      ? { iconUrl: fallbackResource.iconUrl }
+      : normalized?.iconUrl
+        ? { iconUrl: normalized.iconUrl }
+        : {}),
+  };
+}
+
+function mergeExtensions(clientExtensions, serverExtensions) {
+  const client = asObject(clientExtensions);
+  if (!client && !serverExtensions) return undefined;
+  return {
+    ...(client ?? {}),
+    ...(serverExtensions ?? {}),
+  };
+}
+
 /**
  * Reshape an incoming PaymentPayloadV2 for facilitator consumption.
  * Per spec §5.2.2 the required fields are {x402Version, accepted, payload}
  * and optional are {resource, extensions}. Clients (AgentCash, @x402/fetch)
- * send a spec-correct envelope; we just strip `accepted` to the canonical
- * PaymentRequirements shape since clients echo whatever extras we stuffed
- * into our own 402 challenge and CDP rejects extras as invalid.
+ * send a spec-correct envelope; we strip `accepted` to the canonical
+ * PaymentRequirements shape and bind `resource` / `extensions` back to
+ * the server's route metadata before sending the facilitator request.
  *
  * Do NOT alter `payload.payload` (the EIP-3009 authorization + signature)
- * or any other top-level field — only normalize `accepted`.
+ * or any other top-level field.
  */
-function canonicalizePaymentPayload(payload) {
+function canonicalizePaymentPayload(
+  payload,
+  { fallbackResource, serverExtensions } = {},
+) {
   if (!payload || typeof payload !== "object") return payload;
-  if (!payload.accepted || typeof payload.accepted !== "object") return payload;
-  return {
-    ...payload,
-    accepted: canonicalizeRequirements(payload.accepted),
-  };
+  const next =
+    payload.accepted && typeof payload.accepted === "object"
+      ? {
+          ...payload,
+          accepted: canonicalizeRequirements(payload.accepted),
+        }
+      : { ...payload };
+
+  const resource = normalizePaymentResource(next.resource, fallbackResource);
+  if (resource) next.resource = resource;
+
+  const extensions = mergeExtensions(next.extensions, serverExtensions);
+  if (extensions) next.extensions = extensions;
+
+  return next;
 }
 
 async function x402Verify(paymentSignature, facilitatorUrl, expected) {
-  const { amount, payTo, timeoutMs, paymentRequirements, onVerify, cdpAuth } = expected;
+  const {
+    amount,
+    payTo,
+    timeoutMs,
+    paymentRequirements,
+    resource,
+    extensions,
+    onVerify,
+    cdpAuth,
+  } = expected;
   const payload = decodePaymentPayload(paymentSignature);
   if (!payload) return { valid: false, reason: "payload_malformed" };
   if (!looksLikeX402Envelope(payload)) {
@@ -1200,7 +1361,10 @@ async function x402Verify(paymentSignature, facilitatorUrl, expected) {
   // paymentRequirements to the strict x402 v2 spec shape (§5.1.2). CDP's
   // schema validator rejects non-spec fields with a generic
   // "invalid_payload" reason.
-  const wirePayload = canonicalizePaymentPayload(payload);
+  const wirePayload = canonicalizePaymentPayload(payload, {
+    fallbackResource: resource ?? resourceInfoFromRequirements(paymentRequirements),
+    serverExtensions: extensions,
+  });
   const wireRequirements = canonicalizeRequirements(paymentRequirements);
 
   try {
@@ -1308,14 +1472,24 @@ async function x402Verify(paymentSignature, facilitatorUrl, expected) {
  * twice on the happy path, and we send the facilitator the same bound
  * requirements it saw on verify.
  */
-async function x402Settle(payload, facilitatorUrl, timeoutMs, paymentRequirements, cdpAuth) {
+async function x402Settle(
+  payload,
+  facilitatorUrl,
+  timeoutMs,
+  paymentRequirements,
+  cdpAuth,
+  { resource, extensions } = {},
+) {
   if (!payload || typeof payload !== "object") {
     throw new Error("x402Settle: payload must be the decoded object from x402Verify");
   }
 
   // Idempotent — if x402Verify already canonicalized, these are no-ops.
   // Defense-in-depth for any future caller who invokes settle without verify.
-  const wirePayload = canonicalizePaymentPayload(payload);
+  const wirePayload = canonicalizePaymentPayload(payload, {
+    fallbackResource: resource ?? resourceInfoFromRequirements(paymentRequirements),
+    serverExtensions: extensions,
+  });
   const wireRequirements = canonicalizeRequirements(paymentRequirements);
 
   const body = paymentRequirements
@@ -1357,7 +1531,7 @@ async function x402Settle(payload, facilitatorUrl, timeoutMs, paymentRequirement
 /**
  * Build and mount:
  *   - GET /openapi.json       AgentCash-compliant OpenAPI 3.1.0
- *   - GET /.well-known/x402   x402 v1 fallback discovery
+ *   - GET /.well-known/x402   Bazaar-style x402 v2 resource discovery
  *
  * Reads `_dualAmount` / `_dualDescription` off each route's charge handler
  * to populate pricing — no need to re-specify amounts in two places.
@@ -1366,6 +1540,9 @@ async function x402Settle(payload, facilitatorUrl, timeoutMs, paymentRequirement
  * @param {ReturnType<typeof createDual402>} dual
  * @param {{
  *   info: { title: string, version: string, description: string, "x-guidance"?: string },
+ *   serviceName?: string,
+ *   tags?: string[],
+ *   iconUrl?: string,
  *   serviceInfo?: object,
  *   ownershipProofs?: object[],
  *   routes: Array<{
@@ -1379,6 +1556,9 @@ async function x402Settle(payload, facilitatorUrl, timeoutMs, paymentRequirement
  */
 export function dualDiscovery(app, dual, config) {
   const paths = {};
+  const mountedAt = new Date().toISOString();
+  const serviceName = config.serviceName ?? config.info?.title;
+  const serviceTags = normalizeTags(config.tags);
 
   for (const r of config.routes) {
     if (typeof r.handler?._dualAmount !== "string") {
@@ -1391,13 +1571,43 @@ export function dualDiscovery(app, dual, config) {
     // Stash the route's declared canonical method so the 402 envelope's
     // bazaar info.input.method reflects the intended invocation shape,
     // not the incidental method of whatever probe triggered the 402.
-    // When one handler is shared between GET and POST mounts, the last
-    // `method` declared in config.routes wins — declare POST (canonical).
+    // When one handler is shared between GET and POST mounts, the first
+    // discovery route declares the canonical paid invocation shape.
+    const method = r.method.toUpperCase();
+    const routeKey = `${method} ${r.path}`;
     if (!r.handler._dualCanonicalMethod) {
-      r.handler._dualCanonicalMethod = r.method.toUpperCase();
+      r.handler._dualCanonicalMethod = method;
     }
 
     const amount = r.handler._dualAmount;
+    const routeTags = mergeTags(serviceTags, r.tags);
+
+    if (r.requestBodySchema) {
+      r.handler._dualInputSchema ??= r.requestBodySchema;
+      r.handler._dualInputSchemasByMethod ??= {};
+      r.handler._dualInputSchemasByMethod[method] = r.requestBodySchema;
+      r.handler._dualInputSchemasByRoute ??= {};
+      r.handler._dualInputSchemasByRoute[routeKey] = r.requestBodySchema;
+    }
+    const outputSchema = r.responseSchema ?? {
+      type: "object",
+      properties: {
+        results: { type: "array", items: { type: "object" } },
+      },
+      required: ["results"],
+    };
+    r.handler._dualOutputSchema ??= outputSchema;
+    r.handler._dualOutputSchemasByMethod ??= {};
+    r.handler._dualOutputSchemasByMethod[method] = outputSchema;
+    r.handler._dualOutputSchemasByRoute ??= {};
+    r.handler._dualOutputSchemasByRoute[routeKey] = outputSchema;
+    if (serviceName) r.handler._dualServiceName = serviceName;
+    if (routeTags.length > 0) {
+      r.handler._dualTags ??= routeTags;
+      r.handler._dualTagsByRoute ??= {};
+      r.handler._dualTagsByRoute[routeKey] = routeTags;
+    }
+    if (config.iconUrl) r.handler._dualIconUrl = config.iconUrl;
 
     const operation = {
       operationId: r.operationId,
@@ -1428,13 +1638,7 @@ export function dualDiscovery(app, dual, config) {
           description: "Successful response",
           content: {
             "application/json": {
-              schema: r.responseSchema ?? {
-                type: "object",
-                properties: {
-                  results: { type: "array", items: { type: "object" } },
-                },
-                required: ["results"],
-              },
+              schema: outputSchema,
             },
           },
         },
@@ -1472,7 +1676,14 @@ export function dualDiscovery(app, dual, config) {
     paths,
   };
 
-  if (config.serviceInfo) spec["x-service-info"] = config.serviceInfo;
+  if (config.serviceInfo || serviceName || serviceTags.length > 0 || config.iconUrl) {
+    spec["x-service-info"] = {
+      ...(config.serviceInfo ?? {}),
+      ...(serviceName && { serviceName }),
+      ...(serviceTags.length > 0 && { tags: serviceTags }),
+      ...(config.iconUrl && { iconUrl: config.iconUrl }),
+    };
+  }
 
   app.get("/openapi.json", (req, res) =>
     res.json({
@@ -1481,16 +1692,96 @@ export function dualDiscovery(app, dual, config) {
     }),
   );
 
-  // /.well-known/x402 — minimal v1 fallback discovery.
+  // /.well-known/x402 — merchant-owned x402 v2 discovery. The CDP
+  // discovery API returns catalog rows in a similar shape after at
+  // least one successful settle indexes the resource.
   app.get("/.well-known/x402", (req, res) => {
-    const resources = Array.from(
-      new Set(config.routes.map((r) => `${r.method.toUpperCase()} ${r.path}`)),
+    const baseUrl = resolveBaseUrl(req);
+    const resources = config.routes.map((route) =>
+      buildDiscoveryResource({
+        baseUrl,
+        config,
+        dual,
+        mountedAt,
+        route,
+      }),
     );
-    res.json({ version: 1, resources });
+    res.json({
+      x402Version: 2,
+      payTo: dual._x402Config.payTo,
+      resources,
+      pagination: {
+        limit: resources.length,
+        offset: 0,
+        total: resources.length,
+      },
+    });
   });
 }
 
+function buildDiscoveryResource({ baseUrl, config, dual, mountedAt, route }) {
+  const method = route.method.toUpperCase();
+  const routeKey = `${method} ${route.path}`;
+  const resourceUrl = `${baseUrl}${route.path}`;
+  const amount = route.handler._dualAmount;
+  const description =
+    route.description ?? route.handler._dualDescription ?? route.summary;
+  const inputSchema =
+    route.handler._dualInputSchemasByRoute?.[routeKey] ??
+    route.handler._dualInputSchemasByMethod?.[method] ??
+    route.handler._dualInputSchema;
+  const outputSchema =
+    route.handler._dualOutputSchemasByRoute?.[routeKey] ??
+    route.handler._dualOutputSchemasByMethod?.[method] ??
+    route.handler._dualOutputSchema;
+  const extensions = buildBazaarExtensions({
+    method,
+    inputSchema,
+    outputSchema,
+    inputExample: route.handler._dualInputExample,
+    outputExample: route.handler._dualOutputExample,
+  });
+  const serviceName = config.serviceName ?? config.info?.title;
+  const tags = mergeTags(config.tags, route.tags);
+
+  return {
+    resource: resourceUrl,
+    description,
+    type: "http",
+    x402Version: 2,
+    lastUpdated: mountedAt,
+    accepts: [
+      buildAcceptsEntry({
+        network: dual._x402Config.network,
+        amountRaw: toSmallestUnit(amount, 6),
+        asset: dual._x402Config.asset,
+        payTo: dual._x402Config.payTo,
+        resourceUrl,
+        description,
+        extra: dual._x402Config.extra,
+      }),
+    ],
+    ...(extensions && { extensions }),
+    ...(serviceName && { serviceName }),
+    ...(tags.length > 0 && { tags }),
+    ...(config.iconUrl && { iconUrl: config.iconUrl }),
+  };
+}
+
 // ── Utilities ───────────────────────────────────────────────────────────
+
+function normalizeTags(tags) {
+  const normalized = new Set();
+  for (const tag of tags ?? []) {
+    const value = String(tag).trim();
+    if (value) normalized.add(value);
+  }
+  return Array.from(normalized);
+}
+
+function mergeTags(first, second) {
+  return normalizeTags([...(first ?? []), ...(second ?? [])]);
+}
 
 /**
  * Convert a decimal-string amount to smallest-unit integer string, doing

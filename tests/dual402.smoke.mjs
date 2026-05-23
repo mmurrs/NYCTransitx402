@@ -230,6 +230,9 @@ console.log("bazaar.info varies by method");
     const handler = dual.charge({ amount: "0.02", description: "Route" });
     handler._dualInputSchema = inputSchema;
     handler._dualOutputSchema = outputSchema;
+    handler._dualServiceName = "NYC Transit Live";
+    handler._dualTags = ["nyc", "transit"];
+    handler._dualIconUrl = "https://transit402.dev/favicon.svg";
 
     const headers = {};
     const req = {
@@ -283,6 +286,21 @@ console.log("bazaar.info varies by method");
       "POST: top-level resource.method === 'POST'",
       `got ${json?.resource?.method}`,
     );
+    assert(
+      json?.resource?.serviceName === "NYC Transit Live",
+      "POST: resource.serviceName advertised",
+      `got ${json?.resource?.serviceName}`,
+    );
+    assert(
+      Array.isArray(json?.resource?.tags) && json.resource.tags.includes("nyc"),
+      "POST: resource.tags advertised",
+      `got ${JSON.stringify(json?.resource?.tags)}`,
+    );
+    assert(
+      json?.resource?.iconUrl === "https://transit402.dev/favicon.svg",
+      "POST: resource.iconUrl advertised",
+      `got ${json?.resource?.iconUrl}`,
+    );
 
     // Schema structure check: the draft-2020-12 schema must at least be
     // ajv-compilable. `info` is an EXAMPLE value, not a validated
@@ -322,6 +340,11 @@ console.log("bazaar.info varies by method");
       "GET: top-level resource.method === 'GET'",
       `got ${json?.resource?.method}`,
     );
+    assert(
+      json?.resource?.serviceName === "NYC Transit Live",
+      "GET: resource.serviceName advertised",
+      `got ${json?.resource?.serviceName}`,
+    );
 
     const { default: Ajv2020 } = await import("ajv/dist/2020.js");
     const ajv = new Ajv2020({ strict: false, allErrors: true });
@@ -333,6 +356,134 @@ console.log("bazaar.info varies by method");
       fail("GET: bazaar.schema compiles under Ajv draft-2020", err.message);
     }
     if (compiled) ok("GET: bazaar.schema compiles under Ajv draft-2020");
+  }
+}
+
+// ── CDP/Bazaar facilitator payload carries server-owned resource metadata ──
+console.log("facilitator resource payload");
+{
+  const calls = [];
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async (url, options = {}) => {
+    calls.push({
+      url: String(url),
+      body: JSON.parse(String(options.body ?? "{}")),
+    });
+    const body = String(url).endsWith("/verify")
+      ? { isValid: true }
+      : { success: true, transaction: "0x1234567890abcdef" };
+    return new Response(JSON.stringify(body), {
+      status: 200,
+      headers: { "content-type": "application/json" },
+    });
+  };
+
+  try {
+    const handler = dual.charge({ amount: "0.02", description: "Route" });
+    handler._dualCanonicalMethod = "POST";
+    handler._dualInputSchema = {
+      type: "object",
+      required: ["lat", "lng"],
+      properties: {
+        lat: { type: "number" },
+        lng: { type: "number" },
+      },
+    };
+    handler._dualOutputSchema = {
+      type: "object",
+      properties: { results: { type: "array" } },
+    };
+    handler._dualInputExample = { lat: 40.758, lng: -73.9855, limit: 5 };
+    handler._dualOutputExample = { results: [] };
+    handler._dualServiceName = "NYC Transit Live";
+    handler._dualTags = ["nyc", "transit"];
+    handler._dualIconUrl = "https://transit402.dev/favicon.svg";
+
+    const paymentPayload = {
+      x402Version: 2,
+      accepted: {
+        scheme: "exact",
+        network: VALID_CONFIG.x402.network,
+        amount: "20000",
+        asset: dual._x402Asset,
+        payTo: VALID_CONFIG.x402.payTo,
+        maxTimeoutSeconds: 300,
+        resource: "https://attacker.example/not-this-route",
+        description: "client-controlled",
+        extra: { name: "USD Coin", version: "2" },
+      },
+      resource: {
+        url: "https://attacker.example/not-this-route",
+        method: "DELETE",
+        description: "client-controlled",
+        mimeType: "text/plain",
+        serviceName: "Wrong Service",
+        tags: ["wrong"],
+        iconUrl: "https://attacker.example/icon.svg",
+      },
+      payload: {
+        authorization: {
+          from: "0x0000000000000000000000000000000000000001",
+          to: VALID_CONFIG.x402.payTo,
+          value: "20000",
+          validAfter: "0",
+          validBefore: "9999999999",
+          nonce: "1",
+        },
+        signature: "0x01",
+      },
+    };
+
+    const headers = {};
+    const req = {
+      method: "GET",
+      headers: {
+        "payment-signature": Buffer.from(JSON.stringify(paymentPayload)).toString("base64"),
+      },
+      originalUrl: "/route?lat=1&lng=2",
+      path: "/route",
+      protocol: "https",
+      get: (k) => (k === "host" ? "example.com" : undefined),
+    };
+    const res = {
+      headersSent: false,
+      statusCode: 200,
+      status(c) { this.statusCode = c; return this; },
+      setHeader(k, v) { headers[k] = v; },
+      getHeader(k) { return headers[k]; },
+      set(k, v) { this.setHeader(k, v); return this; },
+      json() { this.headersSent = true; return this; },
+      send() { this.headersSent = true; return this; },
+      end() { this.headersSent = true; return this; },
+    };
+
+    let nextCalled = false;
+    await new Promise((r) => {
+      handler(req, res, () => {
+        nextCalled = true;
+        r();
+      });
+      setImmediate(r);
+    });
+    await new Promise((r) => setImmediate(r));
+
+    assert(nextCalled, "valid facilitator response reaches next()");
+    const verifyBody = calls.find((c) => c.url.endsWith("/verify"))?.body;
+    const settleBody = calls.find((c) => c.url.endsWith("/settle"))?.body;
+    for (const [name, body] of [["verify", verifyBody], ["settle", settleBody]]) {
+      const resource = body?.paymentPayload?.resource;
+      assert(resource?.url === "https://example.com/route", `${name}: resource.url is server-owned`, `got ${resource?.url}`);
+      assert(resource?.method === undefined, `${name}: resource.method stripped for facilitator`, `got ${resource?.method}`);
+      assert(resource?.description === "Route", `${name}: resource.description is server-owned`, `got ${resource?.description}`);
+      assert(resource?.mimeType === "application/json", `${name}: resource.mimeType set`);
+      assert(resource?.serviceName === "NYC Transit Live", `${name}: resource.serviceName set`, `got ${resource?.serviceName}`);
+      assert(Array.isArray(resource?.tags) && resource.tags.includes("transit"), `${name}: resource.tags set`, `got ${JSON.stringify(resource?.tags)}`);
+      assert(resource?.iconUrl === "https://transit402.dev/favicon.svg", `${name}: resource.iconUrl set`, `got ${resource?.iconUrl}`);
+      assert(body?.paymentPayload?.accepted?.resource === undefined, `${name}: accepted.resource stripped`);
+      assert(body?.paymentPayload?.extensions?.bazaar?.info?.input?.method === "POST", `${name}: bazaar method is canonical POST`);
+    }
+  } finally {
+    globalThis.fetch = originalFetch;
   }
 }
 

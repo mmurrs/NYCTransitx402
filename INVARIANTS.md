@@ -10,7 +10,7 @@ either prove it doesn't break these, or add a new invariant and a new test.
 |-----|-----------|-------------|
 | P1  | Paid routes never return 200 without a verified payment (x402 OR MPP). | `tests/invariants.test.mjs::payment.unauth returns 402` |
 | P2  | Every 402 response carries both `PAYMENT-REQUIRED` (x402) and `WWW-Authenticate` (MPP) headers. A client can't be forced to pick a protocol before seeing the offer. | `tests/invariants.test.mjs::payment.402 carries both headers` |
-| P3  | The `PAYMENT-REQUIRED` base64 payload decodes to x402 v2 with `amount`, `asset`, `payTo`, `network` all matching server config, and `resource` normalized to `${BASE_URL}<path>` (no query-string drift). | `tests/invariants.test.mjs::payment.x402 challenge matches config` |
+| P3  | The `PAYMENT-REQUIRED` base64 payload decodes to x402 v2 with `amount`, `asset`, `payTo`, `network` all matching server config, `resource` normalized to `${BASE_URL}<path>` (no query-string drift), and Bazaar identity fields (`serviceName`, `tags`, `iconUrl`) present. | `tests/invariants.test.mjs::payment.x402 challenge matches config` |
 | P4  | A forged `PAYMENT-SIGNATURE` with wrong amount is rejected locally, never reaches the facilitator. | `tests/invariants.test.mjs::payment.wrong amount rejected locally` |
 | P5  | A forged `PAYMENT-SIGNATURE` with wrong payee is rejected locally, never reaches the facilitator. | `tests/invariants.test.mjs::payment.wrong payee rejected locally` |
 | P6  | A `PAYMENT-SIGNATURE` missing the `amount` field is rejected (no "field absent = wave through"). | `tests/invariants.test.mjs::payment.missing amount rejected` |
@@ -24,8 +24,8 @@ either prove it doesn't break these, or add a new invariant and a new test.
 
 | ID  | Invariant | Enforced by |
 |-----|-----------|-------------|
-| D1  | `/.well-known/x402` is the exact minimal v1 fallback shape: `{ "version": 1, "resources": ["POST /path", ...] }` covering every paid canonical route. | `tests/invariants.test.mjs::discovery.well-known/x402 shape` |
-| D2  | `/openapi.json` is canonical discovery: OpenAPI 3.1.0, POST-only paid operations, JSON request bodies, JSON response schemas, and `info.x-guidance`. | `tests/invariants.test.mjs::discovery.openapi uses POST schemas` |
+| D1  | `/.well-known/x402` publishes x402 v2 resource rows for every paid canonical route, including `resource`, `type`, `x402Version`, `lastUpdated`, `accepts`, `extensions.bazaar`, `serviceName`, `tags`, `iconUrl`, and pagination metadata. | `tests/invariants.test.mjs::discovery.well-known/x402 shape` |
+| D2  | `/openapi.json` is canonical discovery: OpenAPI 3.1.0, POST-only paid operations, JSON request bodies, JSON response schemas, `info.x-guidance`, and `x-service-info` identity. | `tests/invariants.test.mjs::discovery.openapi uses POST schemas` |
 | D3  | Every paid OpenAPI operation exposes `x-payment-info.price` in fixed-price shape plus both protocol descriptors (`x402`, `mpp`) and a `402` response. | `tests/invariants.test.mjs::discovery.openapi payment metadata` |
 | D4  | The fixed USD amount in `/openapi.json` matches the raw `amount` advertised in the runtime `PAYMENT-REQUIRED` challenge for the same route. | `tests/invariants.test.mjs::discovery.price consistency` |
 | D5  | Canonical POST routes still return `402` on an unpaid probe with an empty body, so discovery scanners can verify payment behavior before they know the request payload. | `tests/invariants.test.mjs::discovery.empty POST probe returns 402` |
