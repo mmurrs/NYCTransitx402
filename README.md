@@ -2,7 +2,7 @@
 
 Real-time NYC transit for agents. Citi Bike stations, subway arrivals, and bus predictions — $0.02/check via [MPP](https://mpp.dev) or [x402](https://x402.org).
 
-**OpenAPI:** [/openapi.json](https://transit402.dev/openapi.json) · **x402 fallback:** [/.well-known/x402](https://transit402.dev/.well-known/x402)
+**OpenAPI:** [/openapi.json](https://transit402.dev/openapi.json) · **x402 discovery:** [/.well-known/x402](https://transit402.dev/.well-known/x402)
 
 ## Quickstart
 
@@ -37,7 +37,7 @@ npx agentcash add https://transit402.dev
 
 ## Endpoints
 
-Four endpoints, $0.02 each via [MPP](https://mpp.dev) or [x402](https://x402.org). Both protocols accepted on every route.
+Five endpoints, $0.02 each via [MPP](https://mpp.dev) or [x402](https://x402.org). Both protocols accepted on every route.
 
 ### Bike
 

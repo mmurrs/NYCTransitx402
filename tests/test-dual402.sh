@@ -127,14 +127,22 @@ X402_DISC=$(curl -s "http://localhost:8080/.well-known/x402")
 if echo "$X402_DISC" | python3 -c "
 import sys, json
 d = json.load(sys.stdin)
-assert d.get('x402Version') == 2, f'x402Version={d.get(\"x402Version\")}'
-assert len(d['accepts']) == 4, f'expected 4 accepts, got {len(d[\"accepts\"])}'
-for a in d['accepts']:
-    assert a['resource'].startswith('http'), f'resource not a URL: {a[\"resource\"]}'
+assert d.get('x402Version') == 2, 'x402Version mismatch'
+assert d.get('payTo'), 'payTo missing'
+assert d.get('pagination', {}).get('total') == 5, 'pagination.total mismatch'
+assert len(d['resources']) == 5, 'expected 5 resources'
+for item in d['resources']:
+    assert item['resource'].startswith('http'), 'resource not a URL'
+    assert item['type'] == 'http', 'type mismatch'
+    assert item['serviceName'] == 'NYC Transit Live', 'serviceName mismatch'
+    assert 'transit' in item.get('tags', []), 'tags missing transit'
+    assert item.get('iconUrl'), 'iconUrl missing'
+    assert item.get('extensions', {}).get('bazaar'), 'bazaar extension missing'
+    a = item['accepts'][0]
     assert a['payTo'], 'payTo missing'
     assert a['network'], 'network missing'
 " 2>/dev/null; then
-  pass "/.well-known/x402 → v2 with 4 accepts, URLs + payTo + network populated"
+  pass "/.well-known/x402 → v2 resources with Bazaar identity + payment metadata"
 else
   fail "/.well-known/x402 → unexpected response"
   echo "$X402_DISC" | head -c 400 | sed 's/^/    /'
@@ -142,8 +150,8 @@ else
 fi
 
 OA_DISC=$(curl -s "http://localhost:8080/openapi.json")
-if echo "$OA_DISC" | python3 -c "import sys,json; d=json.load(sys.stdin); assert len(d['paths'])==4" 2>/dev/null; then
-  pass "/openapi.json → 4 routes listed"
+if echo "$OA_DISC" | python3 -c "import sys,json; d=json.load(sys.stdin); assert len(d['paths'])==5; assert d['x-service-info']['serviceName']=='NYC Transit Live'" 2>/dev/null; then
+  pass "/openapi.json → 5 routes listed with service identity"
 else
   fail "/openapi.json → unexpected response"
 fi
@@ -159,10 +167,10 @@ DISC_ROUTES=$(echo "$DISC_OUTPUT" | grep -c "paid" || true)
 echo "$DISC_OUTPUT" | sed 's/^/    /'
 echo ""
 
-if [ "$DISC_ROUTES" -eq 4 ]; then
-  pass "AgentCash discover → 4 paid routes found"
+if [ "$DISC_ROUTES" -eq 5 ]; then
+  pass "AgentCash discover → 5 paid routes found"
 else
-  fail "AgentCash discover → expected 4 paid routes, got $DISC_ROUTES"
+  fail "AgentCash discover → expected 5 paid routes, got $DISC_ROUTES"
 fi
 
 if [ "$DISC_WARNINGS" -eq 0 ]; then
